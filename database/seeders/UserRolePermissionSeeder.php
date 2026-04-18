@@ -16,7 +16,6 @@ class UserRolePermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create Permissions
         Permission::create(['name' => 'view role']);
         Permission::create(['name' => 'create role']);
         Permission::create(['name' => 'update role']);
@@ -42,32 +41,31 @@ class UserRolePermissionSeeder extends Seeder
         Permission::create(['name' => 'update setting']);
         Permission::create(['name' => 'delete setting']);
 
+        Permission::create(['name' => 'view category']);
+        Permission::create(['name' => 'create category']);
+        Permission::create(['name' => 'update category']);
+        Permission::create(['name' => 'delete category']);
 
-        // Create Roles
-        $superAdminRole = Role::create(['name' => 'super-admin']); //as super-admin
-        $adminRole = Role::create(['name' => 'admin']);
+        Permission::create(['name' => 'view post']);
+        Permission::create(['name' => 'create post']);
+        Permission::create(['name' => 'update post']);
+        Permission::create(['name' => 'delete post']);
+
+        $superAdminRole = Role::create(['name' => 'super-admin']);
+        $authorRole = Role::create(['name' => 'author']);
         $userRole = Role::create(['name' => 'user']);
 
-        // give all permissions to super-admin role.
         $allPermissionNames = Permission::pluck('name')->toArray();
 
         $superAdminRole->givePermissionTo($allPermissionNames);
 
-        // give permissions to admin role.
-        $adminRole->givePermissionTo(['view role']);
-        $adminRole->givePermissionTo(['view permission']);
-        $adminRole->givePermissionTo(['create user', 'view user', 'update user']);
-
-
-        // Create User and assign Role to it.
-
         $superAdminUser = User::firstOrCreate([
-                    'email' => 'superadmin@gmail.com',
+                    'email' => 'bigtimesnewsofficial@gmail.com',
                 ], [
                     'name' => 'Super Admin',
-                    'email' => 'superadmin@gmail.com',
+                    'email' => 'bigtimesnewsofficial@gmail.com',
                     'username' => 'superadmin',
-                    'password' => Hash::make ('superadmin@gmail.com'),
+                    'password' => Hash::make ('ABrauf!@#$1234'),
                     'email_verified_at' => now(),
                 ]);
 
@@ -78,25 +76,6 @@ class UserRolePermissionSeeder extends Seeder
         ], [
             'user_id' => $superAdminUser->id,
             'first_name' => $superAdminUser->name,
-        ]);
-
-        $adminUser = User::firstOrCreate([
-                            'email' => 'admin@gmail.com'
-                        ], [
-                            'name' => 'Admin',
-                            'username' => 'admin',
-                            'email' => 'admin@gmail.com',
-                            'password' => Hash::make ('admin@gmail.com'),
-                            'email_verified_at' => now(),
-                        ]);
-
-        $adminUser->assignRole($adminRole);
-
-        $adminUserProfile = $adminUser->profile()->firstOrCreate([
-            'user_id' => $adminUser->id,
-        ], [
-            'user_id' => $adminUser->id,
-            'first_name' => $adminUser->name,
         ]);
     }
 }

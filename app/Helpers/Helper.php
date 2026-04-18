@@ -23,7 +23,7 @@ class Helper
     }
     public static function getLogoDark()
     {
-        return CompanySetting::first()->dark_logo ?? asset('assets/img/logo/logo.png');
+        return CompanySetting::first()->dark_logo ?? asset('assets/img/logo/dark-logo.png');
     }
     public static function getFavicon()
     {

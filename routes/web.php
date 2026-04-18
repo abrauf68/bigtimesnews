@@ -5,8 +5,10 @@ use App\Http\Controllers\Auth\GithubController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Dashboard\CategoryController;
 use App\Http\Controllers\Dashboard\HomeController;
 use App\Http\Controllers\Dashboard\NotificationController;
+use App\Http\Controllers\Dashboard\PostController;
 use App\Http\Controllers\Dashboard\ProfileController;
 use App\Http\Controllers\Dashboard\RolePermission\PermissionController;
 use App\Http\Controllers\Dashboard\RolePermission\RoleController;
@@ -37,9 +39,9 @@ use Illuminate\Support\Facades\Session;
 
 Route::get('/lang/{lang}', function ($lang) {
     // dd($lang);
-    if(! in_array($lang, ['en','fr','ar','de'])){
+    if (! in_array($lang, ['en', 'fr', 'ar', 'de'])) {
         abort(404);
-    }else{
+    } else {
         session(['locale' => $lang]);
         App::setLocale($lang);
         Log::info("Locale set to: " . $lang);
@@ -136,10 +138,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
             // User Dashboard Authentication Routes
 
 
+            //categories
+            Route::resource('categories', CategoryController::class);
+            Route::get('categories/status/{id}', [CategoryController::class, 'updateStatus'])->name('categories.status.update');
 
+            //posts
+            Route::resource('posts', PostController::class);
+            Route::get('posts/status/{id}', [PostController::class, 'updateStatus'])->name('posts.status.update');
         });
     });
 
+    Route::post('/posts/upload-image', [PostController::class, 'uploadImage']);
 });
 
 // Frontend Pages Routes
@@ -175,4 +184,3 @@ Route::middleware(['auth'])->group(function () {
         return "Optimization cache cleared!";
     })->name('clear.optimize');
 });
-

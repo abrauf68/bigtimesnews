@@ -28002,6 +28002,7 @@ html:not(.layout-menu-fixed) .menu-inner-shadow {
 }
 .menu:not(.menu-no-animation) .menu-link > :not(.menu-icon) {
   transition: opacity 0.3s ease-in-out;
+  color: #fff;
 }
 
 .menu-sub {
@@ -28092,6 +28093,7 @@ html:not([dir=rtl]) .menu-toggle::after {
 }
 .menu-vertical .menu-item .menu-toggle::after {
   right: 0.75rem;
+  color: #fff;
 }
 [dir=rtl] .menu-vertical .menu-item .menu-toggle::after {
   right: auto;

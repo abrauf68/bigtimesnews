@@ -16,17 +16,27 @@
 <body>
     <!-- Content -->
 
-    <div class="authentication-wrapper authentication-cover">
-        <!-- Logo -->
-        <a href="" class="app-brand auth-cover-brand">
-            <span class="app-brand-logo demo">
-                <img src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}" alt="{{\App\Helpers\Helper::getCompanyName()}}">
-            </span>
-            <span class="app-brand-text demo text-heading fw-bold">{{\App\Helpers\Helper::getCompanyName()}}</span>
-        </a>
-        <!-- /Logo -->
-        <div class="authentication-inner row m-0">
-            @yield('content')
+    <div class="container-xxl">
+        <div class="authentication-wrapper authentication-basic container-p-y">
+            <div class="authentication-inner py-6">
+                <!-- Register Card -->
+                <div class="card" style="background-image: linear-gradient(to right, #434343 0%, black 100%);">
+                    <div class="card-body">
+                        <!-- Logo -->
+                        <div class="app-brand justify-content-center mb-6">
+                            <a href="" class="app-brand-link">
+                                <span class="app-brand-logo">
+                                    <img style="height: 60px" src="{{ asset(\App\Helpers\Helper::getLogoDark()) }}"
+                                        alt="{{ \App\Helpers\Helper::getCompanyName() }}">
+                                </span>
+                            </a>
+                        </div>
+                        <!-- /Logo -->
+                        @yield('content')
+                    </div>
+                </div>
+                <!-- Register Card -->
+            </div>
         </div>
     </div>
 
