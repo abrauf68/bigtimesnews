@@ -47,7 +47,7 @@
                                 </span>
                             @enderror
                         </div>
-                        <div class="mb-4 col-md-4">
+                        <div class="mb-4 col-md-6">
                             <label class="form-label" for="category_id">{{ __('Category') }}</label><span
                                 class="text-danger">*</span>
                             <select id="category_id" name="category_id"
@@ -66,7 +66,7 @@
                                 </span>
                             @enderror
                         </div>
-                        <div class="mb-4 col-md-4">
+                        <div class="mb-4 col-md-6">
                             <label class="form-label" for="author_id">{{ __('Author') }}</label><span
                                 class="text-danger">*</span>
                             <select id="author_id" name="author_id"
@@ -85,7 +85,7 @@
                                 </span>
                             @enderror
                         </div>
-                        <div class="mb-4 col-md-4">
+                        <div class="mb-4 col-md-6">
                             <label for="meta_image" class="form-label">{{ __('Meta Image') }}</label>
                             <input class="form-control @error('meta_image') is-invalid @enderror" type="file"
                                 id="meta_image" name="meta_image" accept="image/*" />
@@ -95,7 +95,7 @@
                                 </span>
                             @enderror
                         </div>
-                        <div class="mb-4 col-md-4">
+                        <div class="mb-4 col-md-6">
                             <label for="main_image" class="form-label">{{ __('Main Image') }}</label>
                             <input class="form-control @error('main_image') is-invalid @enderror" type="file"
                                 id="main_image" name="main_image" accept="image/*" />
@@ -211,6 +211,10 @@
                 automatic_uploads: true,
 
                 images_upload_url: '/posts/upload-image',
+
+                relative_urls: false,
+                remove_script_host: false,
+                convert_urls: true,
 
                 images_upload_handler: function(blobInfo) {
 

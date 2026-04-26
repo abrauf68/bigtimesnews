@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\AjaxController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\GithubController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Dashboard\AuthorController;
 use App\Http\Controllers\Dashboard\CategoryController;
 use App\Http\Controllers\Dashboard\HomeController;
 use App\Http\Controllers\Dashboard\NotificationController;
@@ -36,6 +38,17 @@ use Illuminate\Support\Facades\Session;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+Route::prefix('navbar')->group(function () {
+    Route::get('/latest', [AjaxController::class, 'getLatestPosts'])->name('navbar.latest');
+    Route::get('/category/{slug}', [AjaxController::class, 'getCategoryPosts'])->name('navbar.category');
+    Route::get('/switcher/{slug}', [AjaxController::class, 'getCategorySwitcherPosts'])->name('navbar.switcher'); // Fixed
+});
+
+Route::get('/api/hot-now', [AjaxController::class, 'getHotNowPosts'])->name('navbar.hot-now');
+Route::get('/api/category-sections', [AjaxController::class, 'getAllCategorySections'])->name('api.category.sections');
+Route::get('/api/latest-posts', [AjaxController::class, 'getLatestPostsPaginated'])->name('api.latest.posts');
+Route::get('/api/popular-posts', [AjaxController::class, 'getPopularPosts'])->name('api.popular.posts');
 
 Route::get('/lang/{lang}', function ($lang) {
     // dd($lang);
@@ -142,6 +155,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::resource('categories', CategoryController::class);
             Route::get('categories/status/{id}', [CategoryController::class, 'updateStatus'])->name('categories.status.update');
 
+            //author
+            Route::resource('authors', AuthorController::class);
+            Route::get('authors/status/{id}', [AuthorController::class, 'updateStatus'])->name('authors.status.update');
+
             //posts
             Route::resource('posts', PostController::class);
             Route::get('posts/status/{id}', [PostController::class, 'updateStatus'])->name('posts.status.update');
@@ -154,6 +171,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Frontend Pages Routes
 Route::name('frontend.')->group(function () {
     Route::get('/', [FrontendHomeController::class, 'home'])->name('home');
+    Route::get('/post/{slug}', [PostController::class, 'show'])->name('post.details');
+    Route::get('/category/{slug}', [FrontendController::class, 'category'])->name('category');
 });
 
 

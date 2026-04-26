@@ -39,8 +39,8 @@
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ \Illuminate\Support\Str::limit($post->title, 20, '...') }}</td>
-                                <td>{{ $post->category->name }}</td>
-                                <td>{{ $post->author->name }}</td>
+                                <td>{{ $post->category ? $post->category->name : 'N/A' }}</td>
+                                <td>{{ $post->author ? $post->author->name : 'N/A' }}</td>
                                 <td>{{ $post->created_at->format('d M Y') }}</td>
                                 <td>
                                     <span class="badge me-4 bg-label-{{ $post->status == 'published' ? 'success' : 'secondary' }}">

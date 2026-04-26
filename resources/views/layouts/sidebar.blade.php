@@ -34,6 +34,14 @@
                 </a>
             </li>
         @endcan
+        @can(['view author'])
+            <li class="menu-item {{ request()->routeIs('dashboard.authors.*') ? 'active' : '' }}">
+                <a href="{{ route('dashboard.authors.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-id"></i>
+                    <div>{{ __('Authors') }}</div>
+                </a>
+            </li>
+        @endcan
         @can(['view post'])
             <li class="menu-item {{ request()->routeIs('dashboard.posts.*') ? 'active' : '' }}">
                 <a href="{{ route('dashboard.posts.index') }}" class="menu-link">

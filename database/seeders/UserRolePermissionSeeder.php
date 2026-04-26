@@ -46,6 +46,11 @@ class UserRolePermissionSeeder extends Seeder
         Permission::create(['name' => 'update category']);
         Permission::create(['name' => 'delete category']);
 
+        Permission::create(['name' => 'view author']);
+        Permission::create(['name' => 'create author']);
+        Permission::create(['name' => 'update author']);
+        Permission::create(['name' => 'delete author']);
+
         Permission::create(['name' => 'view post']);
         Permission::create(['name' => 'create post']);
         Permission::create(['name' => 'update post']);

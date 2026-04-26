@@ -197,6 +197,7 @@ return [
         App\Providers\LocaleServiceProvider::class,
         App\Providers\MailServiceProvider::class,
         App\Providers\NotificationServiceProvider::class,
+        App\Providers\ViewServiceProvider::class,
 
     ],
 

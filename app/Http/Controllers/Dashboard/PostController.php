@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Author;
 use App\Models\Post;
 use App\Models\Category;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
@@ -96,7 +98,8 @@ class PostController extends Controller
             $post->meta_title = $request->meta_title;
             $post->meta_description = $request->meta_description;
             $post->meta_keywords = $request->meta_keywords;
-            if ($request->tags) {
+            if($request->tags)
+            {
                 $tags = json_encode(
                     collect(json_decode($request->tags, true))->pluck('value')->all()
                 );
@@ -154,10 +157,18 @@ class PostController extends Controller
             $authors = Author::where('is_active', 'active')->get();
             $uniqueTags = collect(Post::pluck('tags'))
                 ->map(function ($item) {
-                    return json_decode($item, true); // Convert string to array
+                    if (is_array($item)) {
+                        return $item; // already decoded
+                    }
+
+                    if (is_string($item)) {
+                        return json_decode($item, true);
+                    }
+
+                    return [];
                 })
                 ->flatten()
-                ->filter() // remove nulls
+                ->filter()
                 ->unique()
                 ->values()
                 ->all();
@@ -294,12 +305,13 @@ class PostController extends Controller
         $this->authorize('update post');
         try {
             $post = Post::findOrFail($id);
-            $message = $post->is_active == 'active' ? 'Post Deactivated Successfully' : 'Post Activated Successfully';
-            if ($post->is_active == 'active') {
-                $post->is_active = 'inactive';
+            $message = $post->status == 'published' ? 'Post Deactivated Successfully' : 'Post Activated Successfully';
+            if ($post->status == 'published') {
+                $post->status = 'draft';
                 $post->save();
             } else {
-                $post->is_active = 'active';
+                $post->status = 'published';
+                $post->published_at = Carbon::now();
                 $post->save();
             }
             return redirect()->back()->with('success', $message);
@@ -317,12 +329,18 @@ class PostController extends Controller
         ]);
 
         $file = $request->file('file');
-        $filename = time() . '_' . $file->getClientOriginalName();
 
+        // Clean original name (without extension)
+        $name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+
+        // Make slug + unique timestamp
+        $filename = time() . '-' . Str::slug($name) . '.' . $file->getClientOriginalExtension();
+
+        // Store
         $file->storeAs('public/posts/content', $filename);
 
         return response()->json([
-            'location' => asset('storage/posts/content/' . $filename)
+            'location' => url('storage/posts/content/' . $filename) // ✅ full URL
         ]);
     }
 }

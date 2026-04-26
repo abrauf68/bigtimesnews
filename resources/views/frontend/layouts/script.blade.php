@@ -14,6 +14,20 @@
 
 <!-- include app script -->
 <script defer src="{{ asset('front/js/app.js') }}"></script>
+<script defer src="{{ asset('front/js/navbar-ajax.js') }}"></script>
+
+    <script>
+        // Fix for UIkit dropdown close on second click
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.UIkit) {
+                document.querySelectorAll('.uc-navbar-dropdown').forEach(dropdown => {
+                    dropdown.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                    });
+                });
+            }
+        });
+    </script>
 
 <script>
     // Schema toggle via URL
