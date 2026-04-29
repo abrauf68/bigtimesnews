@@ -50,7 +50,7 @@
                     <div class="md:col-3">
                         <!-- Remove data-uc-sticky and use custom CSS -->
                         <div class="sidebar-wrap panel vstack gap-2 pb-2">
-                            
+
                             <!-- Ad Widget -->
                             <div class="widget ad-widget vstack gap-2 text-center p-2 border">
                                 <div class="widgt-content">
@@ -64,7 +64,7 @@
                                     </a>
                                 </div>
                             </div>
-                            
+
                             <!-- Popular Now Widget -->
                             <div class="widget popular-widget vstack gap-2 p-2 border">
                                 <div class="widget-title text-center">
@@ -86,18 +86,26 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Social Widget -->
                             <div class="widget social-widget vstack gap-2 text-center p-2 border">
                                 <div class="widgt-title">
                                     <h4 class="fs-7 ft-tertiary text-uppercase m-0">Follow @News5</h4>
                                 </div>
                                 <div class="widgt-content">
-                                    <form class="vstack gap-1">
+                                    <form id="newsletterForm" class="vstack gap-1">
+                                        @csrf
+
                                         <input
                                             class="form-control form-control-sm fs-6 fw-medium h-40px w-full bg-white dark:bg-gray-800 dark:border-white dark:border-opacity-15"
-                                            type="email" placeholder="Your email" required>
-                                        <button class="btn btn-sm btn-primary" type="submit">Sign up</button>
+                                            type="email" name="email" placeholder="Your email" required>
+
+                                        <button id="submitBtn" class="btn btn-sm btn-primary" type="submit">
+                                            <span class="btn-text">Sign up</span>
+
+                                            <!-- spinner -->
+                                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                        </button>
                                     </form>
                                     <ul class="nav-x justify-center gap-1 mt-3">
                                         <li>
@@ -203,16 +211,16 @@ document.addEventListener('DOMContentLoaded', function() {
 // Load latest posts
 async function loadLatestPosts() {
     if (isLoading || !hasMorePages) return;
-    
+
     isLoading = true;
     const container = document.getElementById('latest-posts-container');
     const spinner = document.getElementById('loading-spinner');
-    
+
     // Show spinner on subsequent pages
     if (currentPage > 1) {
         spinner.style.display = 'block';
     }
-    
+
     try {
         const response = await fetch(`/api/latest-posts?page=${currentPage}`, {
             headers: {
@@ -220,11 +228,11 @@ async function loadLatestPosts() {
                 'Accept': 'application/json'
             }
         });
-        
+
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
+
         const data = await response.json();
-        
+
         if (data.html) {
             if (currentPage === 1) {
                 container.innerHTML = data.html;
@@ -233,7 +241,7 @@ async function loadLatestPosts() {
             }
             hasMorePages = data.hasMorePages;
         }
-        
+
         if (!hasMorePages) {
             document.getElementById('no-more-posts').style.display = 'block';
             // Disconnect observer when no more posts
@@ -241,13 +249,13 @@ async function loadLatestPosts() {
                 sentinelObserver.disconnect();
             }
         }
-        
+
         // Reinitialize UIkit components
         if (window.UIkit) {
             window.UIkit.update(container);
             window.UIkit.lazyLoad();
         }
-        
+
     } catch (error) {
         console.error('Failed to load posts:', error);
         if (currentPage === 1) {
@@ -256,7 +264,7 @@ async function loadLatestPosts() {
     } finally {
         isLoading = false;
         spinner.style.display = 'none';
-        
+
         // Re-observe sentinel
         if (hasMorePages) {
             setTimeout(setupInfiniteScroll, 100);
@@ -271,23 +279,23 @@ function setupInfiniteScroll() {
     if (existingSentinel) {
         existingSentinel.remove();
     }
-    
+
     // Create sentinel element
     const container = document.getElementById('latest-posts-container');
     if (!container) return;
-    
+
     const sentinel = document.createElement('div');
     sentinel.id = 'scroll-sentinel';
     sentinel.style.height = '10px';
     sentinel.style.width = '100%';
     sentinel.style.visibility = 'hidden';
     container.appendChild(sentinel);
-    
+
     // Disconnect old observer
     if (sentinelObserver) {
         sentinelObserver.disconnect();
     }
-    
+
     // Create new observer
     sentinelObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -300,7 +308,7 @@ function setupInfiniteScroll() {
         rootMargin: '0px 0px 200px 0px', // Trigger 200px before reaching the element
         threshold: 0.1
     });
-    
+
     sentinelObserver.observe(sentinel);
 }
 
@@ -308,7 +316,7 @@ function setupInfiniteScroll() {
 async function loadPopularPosts() {
     const container = document.getElementById('popular-posts-container');
     if (!container) return;
-    
+
     try {
         const response = await fetch('/api/popular-posts', {
             headers: {
@@ -316,11 +324,11 @@ async function loadPopularPosts() {
                 'Accept': 'application/json'
             }
         });
-        
+
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
+
         const data = await response.json();
-        
+
         if (data.html) {
             container.innerHTML = data.html;
         }
@@ -335,4 +343,90 @@ window.addEventListener('beforeunload', function() {
         sentinelObserver.disconnect();
     }
 });
+</script>
+
+<script>
+document.getElementById('newsletterForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    let form = this;
+    let formData = new FormData(form);
+
+    let btn = document.getElementById('submitBtn');
+    let btnText = btn.querySelector('.btn-text');
+    let spinner = btn.querySelector('.spinner-border');
+
+    // ✅ disable button + show loader
+    btn.disabled = true;
+    btnText.textContent = 'Submitting...';
+    spinner.classList.remove('d-none');
+
+    fetch("{{ route('frontend.newsletter.store') }}", {
+        method: "POST",
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+
+        if (data.success) {
+            showToast('success', data.message || 'Subscribed successfully!');
+            form.reset();
+        } else {
+            showToast('error', data.message || 'Something went wrong');
+        }
+
+    })
+    .catch(error => {
+        showToast('error', 'Server error occurred');
+    })
+    .finally(() => {
+        // ✅ restore button state
+        btn.disabled = false;
+        btnText.textContent = 'Sign up';
+        spinner.classList.add('d-none');
+    });
+});
+
+
+function showToast(type, message) {
+    let toast = document.createElement('div');
+
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';   // ✅ bottom
+    toast.style.left = '20px';     // ✅ left
+    toast.style.maxWidth = '320px';
+    toast.style.padding = '14px 16px';
+    toast.style.zIndex = 9999;
+
+    // newspaper style look
+    toast.style.background = '#f9f9f9';
+    toast.style.border = '1px solid #ddd';
+    toast.style.borderLeft = '5px solid ' + (type === 'success' ? '#2e7d32' : '#c62828');
+    toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+    toast.style.fontFamily = 'Georgia, serif';
+    toast.style.color = '#222';
+    toast.style.borderRadius = '4px';
+
+    toast.innerHTML = `
+        <div style="font-size: 13px; font-weight: bold; letter-spacing: 0.5px; margin-bottom: 4px; text-transform: uppercase; color:${type === 'success' ? '#2e7d32' : '#c62828'}">
+            ${type === 'success' ? '✓ Breaking News' : '⚠ Alert'}
+        </div>
+        <div style="font-size: 14px; line-height: 1.4;">
+            ${message}
+        </div>
+    `;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.transition = 'all 0.4s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+
+        setTimeout(() => toast.remove(), 400);
+    }, 3000);
+}
 </script>

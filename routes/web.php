@@ -171,8 +171,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Frontend Pages Routes
 Route::name('frontend.')->group(function () {
     Route::get('/', [FrontendHomeController::class, 'home'])->name('home');
-    Route::get('/post/{slug}', [PostController::class, 'show'])->name('post.details');
-    Route::get('/category/{slug}', [FrontendController::class, 'category'])->name('category');
+    // Route::get('/posts/{slug?}', [FrontendHomeController::class, 'postDetail'])->name('post.details');
+    Route::get('/news/{categorySlug?}/{postSlug?}', [FrontendHomeController::class, 'postDetail'])->name('post.details');
+    Route::get('/category/{slug}', [FrontendHomeController::class, 'category'])->name('category');
+    Route::post('/newsletter/store', [FrontendHomeController::class, 'newsletterStore'])->name('newsletter.store');
 });
 
 
