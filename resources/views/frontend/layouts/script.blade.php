@@ -15,6 +15,7 @@
 <!-- include app script -->
 <script defer src="{{ asset('front/js/app.js') }}"></script>
 <script defer src="{{ asset('front/js/navbar-ajax.js') }}"></script>
+<script defer src="{{ asset('front/js/infinite-scroll.js') }}"></script>
 
     <script>
         // Fix for UIkit dropdown close on second click

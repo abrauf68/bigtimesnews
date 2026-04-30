@@ -66,7 +66,7 @@ class HomeController extends Controller
     public function postDetail($slug = null)
     {
         try {
-            $postsQuery = Post::with('category', 'author')->where('status', 'published');
+            $postsQuery = Post::with('category', 'author')->withCount('comments')->where('status', 'published');
 
             if (request()->filled('search')) {
                 $search = request('search');
@@ -80,70 +80,11 @@ class HomeController extends Controller
                     $query->where('status', 'published');
                 }])->orderByDesc('posts_count')->take(5)->get();
 
-            $allTags = Post::where('status', 'published')
-                ->pluck('tags')
-                ->filter()
-                ->map(fn($tag) => json_decode($tag, true))
-                ->flatten()
-                ->filter()
-                ->map(fn($tag) => trim($tag));
+            $page = Page::where('page_name', 'news')->first();
 
-            $topTags = $allTags->countBy()->sortDesc()->take(10);
+            $posts = $postsQuery->latest()->paginate(3)->withQueryString();
 
-            $page = Page::where('page_name', 'blogs')->first();
-
-            if ($slug) {
-                $Category = BlogCategory::where('slug', $categorySlug)->firstOrFail();
-
-                $blog = Blog::with('user.profile:id,user_id,profile_image','blogComments', 'blogCategory')->withCount('blogComments')->where('slug', $blogSlug)
-                    ->where('blog_category_id', $blogCategory->id)
-                    ->where('is_active', 'active')
-                    ->firstOrFail();
-
-                $nextBlog = Blog::with('blogCategory')
-                    ->where('id', '>', $blog->id)
-                    ->where('is_active', 'active')
-                    ->orderBy('id')
-                    ->first();
-
-                if (!$nextBlog) {
-                    $nextBlog = Blog::with('blogCategory')->where('is_active', 'active')->first();
-                }
-
-                $previousBlog = Blog::with('blogCategory')
-                    ->where('id', '<', $blog->id)
-                    ->where('is_active', 'active')
-                    ->orderBy('id', 'desc')
-                    ->first();
-
-                if (!$previousBlog) {
-                    $previousBlog = Blog::with('blogCategory')->where('is_active', 'active')->orderBy('id', 'desc')->first();
-                }
-
-                $relatedBlogs = Blog::with('blogCategory', 'user')
-                    ->where('blog_category_id', $blog->blog_category_id)
-                    ->where('id', '!=', $blog->id)
-                    ->where('is_active', 'active')
-                    ->latest()
-                    ->take(3)
-                    ->get();
-
-                $randomQuote = Quote::inRandomOrder()->first();
-
-                $blogComments = BlogComment::with('user')->where('blog_id', $blog->id)->where('is_active', 'active')->latest()->get();
-
-                return view('frontend.pages.blog.blog-details', compact('blog','nextBlog','previousBlog','relatedBlogs','topTags','topCategories','randomQuote','blogComments'));
-            }
-
-            $blogs = $blogsQuery->latest()->paginate(3)->withQueryString();
-
-            $relatedBlogs = Blog::with('blogCategory', 'user')
-                ->where('is_active', 'active')
-                ->latest()
-                ->take(3)
-                ->get();
-
-            return view('frontend.pages.blog.blogs', compact('blogs','topTags','topCategories','relatedBlogs','page'));
+            return view('frontend.pages.news.main', compact('posts','topCategories', 'page'));
         } catch (\Throwable $th) {
             Log::error('Error loading blogs page: ' . $th->getMessage());
             return redirect()->back()->with('error', 'An error occurred while loading the blogs page.');

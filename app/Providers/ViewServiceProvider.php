@@ -62,8 +62,27 @@ class ViewServiceProvider extends ServiceProvider
             $featuredPosts = Cache::remember('featured_slider_posts', 3600, function () {
                 return Post::featuredSlider(4)->get();
             });
-            
+
             $view->with('featuredPosts', $featuredPosts);
+        });
+
+
+        // Load all categories sections for home page
+        View::composer('frontend.components.category-sections', function ($view) {
+            $categories = Cache::remember('all_categories_with_posts', 1800, function () {
+                return Category::where('is_active', 'active')
+                    ->with(['posts' => function($query) {
+                        $query->published()
+                            ->withCount('comments')
+                            ->latest('published_at')
+                            ->take(6);
+                    }])
+                    ->has('posts')
+                    ->take(6)
+                    ->get();
+            });
+
+            $view->with('categories', $categories);
         });
     }
 }

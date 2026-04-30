@@ -109,19 +109,19 @@ class AjaxController extends Controller
         return response()->json(['html' => $html]);
     }
 
-    
+
     /**
      * Get hot now posts for AJAX loading
      */
     public function getHotNowPosts()
     {
         $posts = Post::hotNow(10)->get();
-        
+
         // Return only the slides, not the entire wrapper
         $html = view('frontend.components.hot-now-posts', [
             'posts' => $posts
         ])->render();
-        
+
         return response()->json(['html' => $html]);
     }
 
@@ -139,38 +139,38 @@ class AjaxController extends Controller
                 ->has('posts') // Only categories with posts
                 ->take(5)
                 ->get();
-            
+
             return view('frontend.components.all-categories-sections', [
                 'categories' => $categories
             ])->render();
         });
-        
+
         return response()->json(['html' => $html]);
     }
-    
+
     // Get single category section (for individual loading)
     public function getCategorySection($slug)
     {
         $cacheKey = "category_section_{$slug}";
-        
+
         $html = Cache::remember($cacheKey, 1800, function () use ($slug) {
             $category = Category::where('slug', $slug)
                 ->where('is_active', 'active')
                 ->firstOrFail();
-            
+
             $posts = $category->posts()
                 ->published()
                 ->withCount('comments')
                 ->latest('published_at')
                 ->take(4)
                 ->get();
-            
+
             return view('frontend.components.category-section', [
                 'category' => $category,
                 'posts' => $posts
             ])->render();
         });
-        
+
         return response()->json(['html' => $html]);
     }
 
@@ -181,7 +181,7 @@ class AjaxController extends Controller
     {
         $page = $request->get('page', 1);
         $perPage = 6; // Load 6 posts per request
-        
+
         $posts = Post::where('status', 'published')
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
@@ -189,13 +189,13 @@ class AjaxController extends Controller
             ->with('user', 'category')
             ->latest('published_at')
             ->paginate($perPage, ['*'], 'page', $page);
-        
+
         $html = view('frontend.components.latest-posts', [
             'posts' => $posts->items(),
             'hasMorePages' => $posts->hasMorePages(),
             'nextPage' => $posts->currentPage() + 1
         ])->render();
-        
+
         return response()->json([
             'html' => $html,
             'hasMorePages' => $posts->hasMorePages(),
@@ -218,11 +218,99 @@ class AjaxController extends Controller
                 ->limit(4)
                 ->get();
         });
-        
+
         $html = view('frontend.components.popular-posts', [
             'posts' => $posts
         ])->render();
-        
+
         return response()->json(['html' => $html]);
+    }
+
+    /**
+     * Get posts for a category with pagination for infinite scroll
+     */
+        // In your PageController or BlogController
+    public function getCategoryPostsInfinite(Request $request, $slug)
+    {
+        try {
+            $category = Category::where('slug', $slug)
+                ->where('is_active', 'active')
+                ->firstOrFail();
+
+            $page = $request->get('page', 1);
+            $perPage = 5; // Load 5 posts per request (adjust as needed)
+
+            $posts = $category->posts()
+                ->where('status', 'published')
+                ->whereNotNull('published_at')
+                ->where('published_at', '<=', now())
+                ->withCount('comments')
+                ->with('author', 'category')
+                ->latest('published_at')
+                ->paginate($perPage, ['*'], 'page', $page);
+
+            $html = view('frontend.components.category-infinite-posts', [
+                'posts' => $posts->items(),
+                'category' => $category,
+                'hasMorePages' => $posts->hasMorePages(),
+                'nextPage' => $posts->currentPage() + 1
+            ])->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'hasMorePages' => $posts->hasMorePages(),
+                'nextPage' => $posts->currentPage() + 1,
+                'total' => $posts->total()
+            ]);
+        } catch (\Throwable $th) {
+            Log::error('Error loading category posts: ' . $th->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading posts'
+            ], 500);
+        }
+    }
+
+    // In App\Http\Controllers\AjaxController.php
+    public function getCategoryInfinitePosts(Request $request, $slug)
+    {
+        try {
+            $page = $request->get('page', 1);
+            $perPage = 5;
+
+            $category = Category::where('slug', $slug)
+                ->where('is_active', 'active')
+                ->firstOrFail();
+
+            $posts = $category->posts()
+                ->where('status', 'published')
+                ->whereNotNull('published_at')
+                ->where('published_at', '<=', now())
+                ->withCount('comments')
+                ->with('author', 'category')
+                ->latest('published_at')
+                ->paginate($perPage, ['*'], 'page', $page);
+
+            $html = view('frontend.components.category-infinite-posts', [
+                'posts' => $posts->items(),
+                'category' => $category
+            ])->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'hasMorePages' => $posts->hasMorePages(),
+                'nextPage' => $posts->currentPage() + 1,
+                'currentPage' => $posts->currentPage(),
+                'total' => $posts->total()
+            ]);
+        } catch (\Throwable $th) {
+            Log::error('Error in getCategoryInfinitePosts: ' . $th->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
     }
 }

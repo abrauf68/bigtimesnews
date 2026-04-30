@@ -24,6 +24,16 @@ class PageSeeder extends Seeder
                 'meta_description' => 'Stay updated with Big Times News – your source for breaking news, latest headlines, world news, politics, business, technology, health, and entertainment updates.',
                 'meta_keywords' => 'breaking news, latest news, world news, Pakistan news, global news, politics news, business news, tech news, health news, entertainment news, Big Times News',
             ],
+
+            [
+                'page_name' => 'news',
+                'title' => 'Latest News',
+                'slug' => 'news',
+                'content' => null,
+                'meta_title' => 'Latest News & Breaking Headlines | Big Times News',
+                'meta_description' => 'Read the latest breaking news and top headlines from around the world. Coverage includes politics, business, technology, sports, health, and entertainment on Big Times News.',
+                'meta_keywords' => 'latest news, breaking news, headlines, world news, politics news, business news, sports news, tech news, health news, entertainment news',
+            ],
         ];
 
         foreach ($pages as $page) {

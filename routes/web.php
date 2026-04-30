@@ -49,6 +49,8 @@ Route::get('/api/hot-now', [AjaxController::class, 'getHotNowPosts'])->name('nav
 Route::get('/api/category-sections', [AjaxController::class, 'getAllCategorySections'])->name('api.category.sections');
 Route::get('/api/latest-posts', [AjaxController::class, 'getLatestPostsPaginated'])->name('api.latest.posts');
 Route::get('/api/popular-posts', [AjaxController::class, 'getPopularPosts'])->name('api.popular.posts');
+Route::get('/api/category/{slug}/infinite', [AjaxController::class, 'getCategoryInfinitePosts'])->name('api.category.infinite');
+Route::get('/api/all-categories-sections', [AjaxController::class, 'getAllCategorySections'])->name('api.all.categories');
 
 Route::get('/lang/{lang}', function ($lang) {
     // dd($lang);
