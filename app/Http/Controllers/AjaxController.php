@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Comment;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -14,7 +15,7 @@ class AjaxController extends Controller
     public function getLatestPosts()
     {
         $html = Cache::remember('navbar_latest_posts', 3600, function () {
-            $posts = Post::where('status', 'published')
+            $posts = Post::with('category:id,name,slug', 'author')->where('status', 'published')
                 ->whereNotNull('published_at')
                 ->where('published_at', '<=', now())
                 ->withCount('comments')
@@ -73,7 +74,7 @@ class AjaxController extends Controller
     public function getCategorySwitcherPosts($slug)
     {
         if ($slug === 'all') {
-            $posts = Post::where('status', 'published')
+            $posts = Post::with('category:id,name,slug', 'author')->where('status', 'published')
                 ->whereNotNull('published_at')
                 ->where('published_at', '<=', now())
                 ->withCount('comments')
@@ -115,7 +116,7 @@ class AjaxController extends Controller
      */
     public function getHotNowPosts()
     {
-        $posts = Post::hotNow(10)->get();
+        $posts = Post::with('category:id,name,slug', 'author')->hotNow(10)->get();
 
         // Return only the slides, not the entire wrapper
         $html = view('frontend.components.hot-now-posts', [
@@ -182,7 +183,7 @@ class AjaxController extends Controller
         $page = $request->get('page', 1);
         $perPage = 6; // Load 6 posts per request
 
-        $posts = Post::where('status', 'published')
+        $posts = Post::with('category:id,name,slug', 'author')->where('status', 'published')
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
             ->withCount('comments')
@@ -209,7 +210,7 @@ class AjaxController extends Controller
     public function getPopularPosts()
     {
         $posts = Cache::remember('popular_posts_sidebar', 3600, function () {
-            return Post::where('status', 'published')
+            return Post::with('category:id,name,slug', 'author')->where('status', 'published')
                 ->whereNotNull('published_at')
                 ->where('published_at', '<=', now())
                 ->withCount('likes')
@@ -226,54 +227,45 @@ class AjaxController extends Controller
         return response()->json(['html' => $html]);
     }
 
+
+
+
+
     /**
-     * Get posts for a category with pagination for infinite scroll
+     * NEW METHOD: Get all categories with their sections
      */
-        // In your PageController or BlogController
-    public function getCategoryPostsInfinite(Request $request, $slug)
+    public function getCategorySections()
     {
         try {
-            $category = Category::where('slug', $slug)
-                ->where('is_active', 'active')
-                ->firstOrFail();
+            $categories = Category::where('is_active', 'active')
+                ->withCount(['posts' => function($q) {
+                    $q->published();
+                }])
+                ->having('posts_count', '>=', 6)
+                ->orderBy('name')
+                // ->take(6)
+                ->get();
 
-            $page = $request->get('page', 1);
-            $perPage = 5; // Load 5 posts per request (adjust as needed)
-
-            $posts = $category->posts()
-                ->where('status', 'published')
-                ->whereNotNull('published_at')
-                ->where('published_at', '<=', now())
-                ->withCount('comments')
-                ->with('author', 'category')
-                ->latest('published_at')
-                ->paginate($perPage, ['*'], 'page', $page);
-
-            $html = view('frontend.components.category-infinite-posts', [
-                'posts' => $posts->items(),
-                'category' => $category,
-                'hasMorePages' => $posts->hasMorePages(),
-                'nextPage' => $posts->currentPage() + 1
+            $html = view('frontend.components.new-category-sections', [
+                'categories' => $categories
             ])->render();
 
             return response()->json([
                 'success' => true,
-                'html' => $html,
-                'hasMorePages' => $posts->hasMorePages(),
-                'nextPage' => $posts->currentPage() + 1,
-                'total' => $posts->total()
+                'html' => $html
             ]);
-        } catch (\Throwable $th) {
-            Log::error('Error loading category posts: ' . $th->getMessage());
+        } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error loading posts'
+                'message' => $e->getMessage()
             ], 500);
         }
     }
 
-    // In App\Http\Controllers\AjaxController.php
-    public function getCategoryInfinitePosts(Request $request, $slug)
+    /**
+     * NEW METHOD: Get posts for infinite scroll by category
+     */
+    public function getCategoryPostsInfinite(Request $request, $slug)
     {
         try {
             $page = $request->get('page', 1);
@@ -281,35 +273,298 @@ class AjaxController extends Controller
 
             $category = Category::where('slug', $slug)
                 ->where('is_active', 'active')
-                ->firstOrFail();
+                ->first();
+
+            if (!$category) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Category not found'
+                ], 404);
+            }
 
             $posts = $category->posts()
-                ->where('status', 'published')
-                ->whereNotNull('published_at')
-                ->where('published_at', '<=', now())
+                ->published()
+                ->with(['author', 'category'])
                 ->withCount('comments')
-                ->with('author', 'category')
                 ->latest('published_at')
                 ->paginate($perPage, ['*'], 'page', $page);
 
-            $html = view('frontend.components.category-infinite-posts', [
+            $html = view('frontend.components.new-category-posts', [
                 'posts' => $posts->items(),
-                'category' => $category
+                'category' => $category,
+                'page' => $page
             ])->render();
 
             return response()->json([
                 'success' => true,
                 'html' => $html,
                 'hasMorePages' => $posts->hasMorePages(),
-                'nextPage' => $posts->currentPage() + 1,
-                'currentPage' => $posts->currentPage(),
-                'total' => $posts->total()
+                'nextPage' => $posts->currentPage() + 1
             ]);
-        } catch (\Throwable $th) {
-            Log::error('Error in getCategoryInfinitePosts: ' . $th->getMessage());
+        } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => $th->getMessage()
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Get related posts for second section (based on current category)
+     */
+    public function getRelatedCategoryPosts(Request $request, $slug)
+    {
+        try {
+            $page = $request->get('page', 1);
+            $perPage = 6;
+
+            $currentCategory = Category::where('slug', $slug)
+                ->where('is_active', 'active')
+                ->first();
+
+            if (!$currentCategory) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Category not found'
+                ], 404);
+            }
+
+            $posts = $currentCategory->posts()
+                ->where('status', 'published')
+                ->whereNotNull('published_at')
+                ->where('published_at', '<=', now())
+                ->with(['author', 'category'])
+                ->withCount('comments')
+                ->latest('published_at')
+                ->paginate($perPage, ['*'], 'page', $page);
+
+            // Force hasMorePages to be true if there are more posts
+            $hasMorePages = $posts->hasMorePages();
+
+            Log::info("Category: {$slug}, Page: {$page}, Total: {$posts->total()}, HasMore: {$hasMorePages}");
+
+            $html = view('frontend.components.category-related-posts-grid', [
+                'posts' => $posts->items(),
+                'category' => $currentCategory
+            ])->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'hasMorePages' => $hasMorePages,
+                'nextPage' => $posts->currentPage() + 1,
+                'total' => $posts->total(),
+                'currentPage' => $posts->currentPage(),
+                'perPage' => $perPage
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Error in getRelatedCategoryPosts: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get most watched posts for sidebar
+     */
+    public function getMostWatchedPosts(Request $request)
+    {
+        try {
+            $categorySlug = $request->get('category_slug');
+
+            $query = Post::with('category:id,name,slug', 'author')->where('status', 'published')
+                ->whereNotNull('published_at')
+                ->where('published_at', '<=', now())
+                ->with(['author', 'category'])
+                ->withCount(['comments', 'likes'])
+                ->orderByRaw('COALESCE(comments_count, 0) + COALESCE(likes_count, 0) DESC')
+                ->limit(5);
+
+            if ($categorySlug) {
+                $query->whereHas('category', function($q) use ($categorySlug) {
+                    $q->where('slug', $categorySlug);
+                });
+            }
+
+            $posts = $query->get();
+
+            Log::info("Most watched posts for {$categorySlug}: " . $posts->count());
+
+            $html = view('frontend.components.category-most-watched', [
+                'posts' => $posts
+            ])->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Error in getMostWatchedPosts: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+
+    /**
+     * Get prev/next posts for AJAX loading
+     */
+    public function getPostNavigation($postId)
+    {
+        try {
+            $post = Post::findOrFail($postId);
+
+            $prevPost = Post::where('status', 'published')
+                ->where('id', '<', $postId)
+                ->where('category_id', $post->category_id)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            $nextPost = Post::where('status', 'published')
+                ->where('id', '>', $postId)
+                ->where('category_id', $post->category_id)
+                ->orderBy('id', 'asc')
+                ->first();
+
+            $prevHtml = $prevPost ? view('frontend.components.post-navigation-item', ['post' => $prevPost, 'type' => 'prev'])->render() : '';
+            $nextHtml = $nextPost ? view('frontend.components.post-navigation-item', ['post' => $nextPost, 'type' => 'next'])->render() : '';
+
+            return response()->json([
+                'success' => true,
+                'prev_html' => $prevHtml,
+                'next_html' => $nextHtml,
+                'has_prev' => !is_null($prevPost),
+                'has_next' => !is_null($nextPost)
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get related posts for AJAX loading
+     */
+    public function getRelatedPosts($postId)
+    {
+        try {
+            $post = Post::findOrFail($postId);
+
+            $relatedPosts = Post::where('status', 'published')
+                ->where('id', '!=', $postId)
+                ->where('category_id', $post->category_id)
+                ->withCount('comments')
+                ->latest('published_at')
+                ->limit(4)
+                ->get();
+
+            $html = view('frontend.components.related-posts-grid', ['posts' => $relatedPosts])->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'total' => $relatedPosts->count()
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get comments for AJAX loading
+     */
+    public function getPostComments($postId)
+    {
+        try {
+            $post = Post::findOrFail($postId);
+
+            $comments = $post->comments()
+                ->with('user')
+                ->where('status', 'approved')
+                ->latest()
+                ->paginate(10);
+
+            $html = view('frontend.components.post-comments', [
+                'comments' => $comments,
+                'post' => $post
+            ])->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'total' => $comments->total(),
+                'has_more' => $comments->hasMorePages(),
+                'next_page' => $comments->currentPage() + 1
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Load more comments (pagination)
+     */
+    public function loadMoreComments(Request $request, $postId)
+    {
+        try {
+            $page = $request->get('page', 1);
+
+            $comments = Comment::where('post_id', $postId)
+                ->with('user')
+                ->where('status', 'approved')
+                ->latest()
+                ->paginate(10, ['*'], 'page', $page);
+
+            $html = view('frontend.components.comments-list', ['comments' => $comments->items()])->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'has_more' => $comments->hasMorePages(),
+                'next_page' => $comments->currentPage() + 1
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Submit comment via AJAX
+     */
+    public function submitComment(Request $request, $postId)
+    {
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|max:255',
+                'comment' => 'required|string|min:3'
+            ]);
+
+            $comment = Comment::create([
+                'post_id' => $postId,
+                'user_name' => $request->name,
+                'user_email' => $request->email,
+                'content' => $request->comment,
+                'status' => 'pending',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Comment submitted successfully and awaiting moderation.',
+                'comment' => $comment
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
             ], 500);
         }
     }

@@ -6,6 +6,7 @@ use App\Models\Category;
 use Illuminate\Support\Facades\View;
 use App\Models\Post;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
 class ViewServiceProvider extends ServiceProvider
@@ -26,7 +27,7 @@ class ViewServiceProvider extends ServiceProvider
         View::composer('frontend.layouts.header', function ($view) {
 
             $tickerPosts = cache()->remember('ticker_posts', 60, function () {
-                return Post::select('id', 'title', 'slug')
+                return Post::with('category:id,name,slug')->select('id', 'title', 'slug', 'category_id')
                     ->where('status', 'published')
                     ->latest()
                     ->take(10)
@@ -41,6 +42,8 @@ class ViewServiceProvider extends ServiceProvider
                     ->get();
             });
 
+            Log::info($tickerPosts);
+
             $view->with([
                 'tickerPosts' => $tickerPosts,
                 'navbarCategories' => $navbarCategories,
@@ -51,7 +54,7 @@ class ViewServiceProvider extends ServiceProvider
         // Load top posts for home section
         View::composer('frontend.sections.top-posts', function ($view) {
             $topPosts = Cache::remember('top_posts_this_month', 3600, function () {
-                return Post::topPostsThisMonth(10)->get();
+                return Post::with('category:id,name,slug')->topPostsThisMonth(10)->get();
             });
 
             $view->with('topPosts', $topPosts);
@@ -60,7 +63,7 @@ class ViewServiceProvider extends ServiceProvider
         // Load featured slider posts (most liked from last 30 days)
         View::composer('frontend.sections.featured-slider', function ($view) {
             $featuredPosts = Cache::remember('featured_slider_posts', 3600, function () {
-                return Post::featuredSlider(4)->get();
+                return Post::with('category:id,name,slug')->featuredSlider(4)->get();
             });
 
             $view->with('featuredPosts', $featuredPosts);

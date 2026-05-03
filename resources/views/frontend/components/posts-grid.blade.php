@@ -7,7 +7,7 @@
                 <li><a href="#" data-category="all">All</a></li>
                 @foreach($categories as $cat)
                     <li>
-                        <a href="#" data-category="{{ $cat->slug }}">
+                        <a href="{{ route('frontend.news.category', $cat->slug) }}" data-category="{{ $cat->slug }}">
                             {{ $cat->name }}
                         </a>
                     </li>
@@ -33,7 +33,7 @@
                     <div class="col-12 text-center py-5">
                         <div class="skeleton-loader">
                             <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                                <span class="visually-hidden"></span>
                             </div>
                             <p class="mt-2">Loading {{ $cat->name }} posts...</p>
                         </div>

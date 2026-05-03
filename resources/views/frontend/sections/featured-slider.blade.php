@@ -53,7 +53,7 @@
                                                             <h3
                                                                 class="post-title h5 lg:h4 xl:h3 m-0 max-w-600px text-white text-truncate-2">
                                                                 <a class="text-none text-white"
-                                                                    href="{{ route('frontend.post.details', $post->slug) }}">
+                                                                    href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}">
                                                                     {{ $post->title }}
                                                                 </a>
                                                             </h3>
@@ -73,7 +73,7 @@
                                                                                             class="w-24px h-24px rounded-circle"
                                                                                             alt="Default User">
                                                                                     @endif
-                                                                                    <a href="#" class="text-white text-none fw-bold">
+                                                                                    <a href="{{ route('frontend.news.show', [$post->category->slug, $post->slug]) }}" class="text-white text-none fw-bold">
                                                                                         {{ $post->author->name ?? 'Admin' }}
                                                                                     </a>
                                                                                 </div>

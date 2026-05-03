@@ -28,6 +28,7 @@ class Post extends Model
         'content',
         'tags',
         'status',
+        'views',
         'published_at'
     ];
 
@@ -107,7 +108,7 @@ class Post extends Model
             ->orderBy('comments_count', 'desc')
             ->limit($limit);
     }
-    
+
     /**
      * Scope for most liked all time
      */
@@ -118,7 +119,7 @@ class Post extends Model
             ->orderBy('likes_count', 'desc')
             ->limit($limit);
     }
-    
+
     /**
      * Scope for trending posts (likes + comments)
      */
@@ -131,7 +132,7 @@ class Post extends Model
             ->orderByRaw('(likes_count + comments_count) desc')
             ->limit($limit);
     }
-    
+
     /**
      * Scope for posts by category
      */

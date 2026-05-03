@@ -17,6 +17,11 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('image')->nullable();
             $table->string('description')->nullable();
+            $table->string('title')->nullable();
+            $table->string('meta_title')->nullable();
+            $table->text('meta_description')->nullable();
+            $table->text('meta_keywords')->nullable();
+            $table->string('author')->nullable();
             $table->enum('is_active', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });

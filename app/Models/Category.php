@@ -14,7 +14,14 @@ class Category extends Model
         'slug',
         'image',
         'description',
-        'is_active'
+
+        'title',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
+        'author',
+
+        'is_active',
     ];
 
     protected $casts = [
@@ -35,9 +42,9 @@ class Category extends Model
     public function publishedPosts(): HasMany
     {
         return $this->hasMany(Post::class, 'category_id')
-                    ->where('status', 'published')
-                    ->whereNotNull('published_at')
-                    ->where('published_at', '<=', now());
+            ->where('status', 'published')
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
     }
 
     /**

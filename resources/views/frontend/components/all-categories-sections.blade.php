@@ -13,7 +13,7 @@
         <div class="container max-w-xl">
             <div class="section-inner">
                 <div class="row child-cols-12 lg:child-cols g-4 lg:g-6 col-match" data-uc-grid>
-                    
+
                     <!-- First Category (Large Layout - Like Opinions) -->
                     @if($firstCategory)
                     <div class="lg:col-8 order-0 lg:order-2">
@@ -21,7 +21,7 @@
                             <div class="block-header panel pt-1 border-top">
                                 <h2 class="h6 ft-tertiary fw-bold ls-0 text-uppercase m-0 text-black dark:text-white">
                                     <a class="hstack d-inline-flex gap-0 text-none hover:text-primary duration-150"
-                                        href="{{ route('frontend.category', $firstCategory->slug) }}">
+                                        href="{{ route('frontend.news.category', $firstCategory->slug) }}">
                                         <span>{{ $firstCategory->name }}</span>
                                         <i class="icon-1 fw-bold unicon-chevron-right"></i>
                                     </a>
@@ -58,7 +58,7 @@
                                                         <span>{{ $featuredPost->published_at->diffForHumans() }}</span>
                                                     </div>
                                                     <h3 class="post-title h5 lg:h4 m-0 max-w-600px text-white text-truncate-2">
-                                                        <a class="text-none text-white" href="{{ route('frontend.post.details', $featuredPost->slug) }}">
+                                                        <a class="text-none text-white" href="{{ route('frontend.news.show', ['category' => $featuredPost->category->slug, 'post' => $featuredPost->slug]) }}">
                                                             {{ $featuredPost->title }}
                                                         </a>
                                                     </h3>
@@ -66,7 +66,7 @@
                                                         <div class="meta">
                                                             <div class="hstack gap-2">
                                                                 <div class="hstack gap-1">
-                                                                    <i class="unicon-heart"></i>
+                                                                    <i class="unicon-favorite"></i>
                                                                     <span>{{ $featuredPost->likes_count ?? 0 }}</span>
                                                                 </div>
                                                                 <div class="hstack gap-1">
@@ -81,7 +81,7 @@
                                         </div>
                                         @endif
                                     </div>
-                                    
+
                                     <!-- List Posts -->
                                     <div class="order-1 md:order-0">
                                         <div class="row child-cols-12 g-2 lg:g-4 sep-x" data-uc-grid>
@@ -93,7 +93,7 @@
                                                             <div class="post-header panel vstack justify-between gap-1">
                                                                 <h3 class="post-title h6 m-0 text-truncate-2">
                                                                     <a class="text-none hover:text-primary duration-150"
-                                                                        href="{{ route('frontend.post.details', $post->slug) }}">
+                                                                        href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}">
                                                                         {{ $post->title }}
                                                                     </a>
                                                                 </h3>
@@ -111,7 +111,7 @@
                                                                         alt="{{ $post->title }}"
                                                                         data-uc-img="loading: lazy">
                                                                 </div>
-                                                                <a href="{{ route('frontend.post.details', $post->slug) }}" class="position-cover"></a>
+                                                                <a href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}" class="position-cover"></a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -125,7 +125,7 @@
                         </div>
                     </div>
                     @endif
-                    
+
                     <!-- Second Category (Sidebar Layout - Like World) -->
                     @if($secondCategory)
                     <div class="lg:col-4 order-1">
@@ -133,7 +133,7 @@
                             <div class="block-header panel pt-1 border-top">
                                 <h2 class="h6 ft-tertiary fw-bold ls-0 text-uppercase m-0 text-black dark:text-white">
                                     <a class="hstack d-inline-flex gap-0 text-none hover:text-primary duration-150"
-                                        href="{{ route('frontend.category', $secondCategory->slug) }}">
+                                        href="{{ route('frontend.news.category', $secondCategory->slug) }}">
                                         <span>{{ $secondCategory->name }}</span>
                                         <i class="icon-1 fw-bold unicon-chevron-right"></i>
                                     </a>
@@ -149,7 +149,7 @@
                                                     <div class="post-header panel vstack justify-between gap-1">
                                                         <h3 class="post-title h6 m-0 text-truncate-2">
                                                             <a class="text-none hover:text-primary duration-150"
-                                                                href="{{ route('frontend.post.details', $post->slug) }}">
+                                                                href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}">
                                                                 {{ $post->title }}
                                                             </a>
                                                         </h3>
@@ -167,7 +167,7 @@
                                                                 alt="{{ $post->title }}"
                                                                 data-uc-img="loading: lazy">
                                                         </div>
-                                                        <a href="{{ route('frontend.post.details', $post->slug) }}" class="position-cover"></a>
+                                                        <a href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}" class="position-cover"></a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -179,7 +179,7 @@
                         </div>
                     </div>
                     @endif
-                    
+
                 </div>
             </div>
         </div>
@@ -199,7 +199,7 @@
                             <div class="block-header panel pt-1 border-top">
                                 <h2 class="h6 ft-tertiary fw-bold ls-0 text-uppercase m-0 text-black dark:text-white">
                                     <a class="hstack d-inline-flex gap-0 text-none hover:text-primary duration-150"
-                                        href="{{ route('frontend.category', $category->slug) }}">
+                                        href="{{ route('frontend.news.category', $category->slug) }}">
                                         <span>{{ $category->name }}</span>
                                         <i class="icon-1 fw-bold unicon-chevron-right"></i>
                                     </a>
@@ -226,7 +226,7 @@
                                                     <div class="meta">
                                                         <div class="hstack gap-2">
                                                             <div class="hstack gap-1">
-                                                                <i class="unicon-heart"></i>
+                                                                <i class="unicon-favorite"></i>
                                                                 <span>{{ $firstPost->likes_count ?? 0 }}</span>
                                                             </div>
                                                             <div class="hstack gap-1">
@@ -237,7 +237,7 @@
                                                     </div>
                                                 </div>
                                                 <h3 class="post-title h6 lg:h5 m-0 max-w-600px text-white text-truncate-2">
-                                                    <a class="text-none text-white" href="{{ route('frontend.post.details', $firstPost->slug) }}">
+                                                    <a class="text-none text-white" href="{{ route('frontend.news.show', ['category' => $firstPost->category->slug, 'post' => $firstPost->slug]) }}">
                                                         {{ $firstPost->title }}
                                                     </a>
                                                 </h3>
@@ -245,11 +245,11 @@
                                                     <span>{{ $firstPost->published_at->diffForHumans() }}</span>
                                                 </div>
                                             </div>
-                                            <a href="{{ route('frontend.post.details', $firstPost->slug) }}" class="position-cover"></a>
+                                            <a href="{{ route('frontend.news.show', ['category' => $firstPost->category->slug, 'post' => $firstPost->slug]) }}" class="position-cover"></a>
                                         </article>
                                     </div>
                                     @endif
-                                    
+
                                     @foreach($category->posts->skip(1)->take(3) as $post)
                                     <div>
                                         <article class="post type-post panel uc-transition-toggle">
@@ -258,7 +258,7 @@
                                                     <div class="post-header panel vstack justify-between gap-1">
                                                         <h3 class="post-title h6 m-0 text-truncate-2">
                                                             <a class="text-none hover:text-primary duration-150"
-                                                                href="{{ route('frontend.post.details', $post->slug) }}">
+                                                                href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}">
                                                                 {{ $post->title }}
                                                             </a>
                                                         </h3>
@@ -276,7 +276,7 @@
                                                                 alt="{{ $post->title }}"
                                                                 data-uc-img="loading: lazy">
                                                         </div>
-                                                        <a href="{{ route('frontend.post.details', $post->slug) }}" class="position-cover"></a>
+                                                        <a href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}" class="position-cover"></a>
                                                     </div>
                                                 </div>
                                             </div>

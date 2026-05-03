@@ -46,11 +46,21 @@ Route::prefix('navbar')->group(function () {
 });
 
 Route::get('/api/hot-now', [AjaxController::class, 'getHotNowPosts'])->name('navbar.hot-now');
-Route::get('/api/category-sections', [AjaxController::class, 'getAllCategorySections'])->name('api.category.sections');
+Route::get('/api/category-sections-home', [AjaxController::class, 'getAllCategorySections'])->name('api.category.sections');
 Route::get('/api/latest-posts', [AjaxController::class, 'getLatestPostsPaginated'])->name('api.latest.posts');
 Route::get('/api/popular-posts', [AjaxController::class, 'getPopularPosts'])->name('api.popular.posts');
-Route::get('/api/category/{slug}/infinite', [AjaxController::class, 'getCategoryInfinitePosts'])->name('api.category.infinite');
-Route::get('/api/all-categories-sections', [AjaxController::class, 'getAllCategorySections'])->name('api.all.categories');
+Route::get('/api/category-sections', [AjaxController::class, 'getCategorySections']);
+Route::get('/api/category/{slug}/posts-infinite', [AjaxController::class, 'getCategoryPostsInfinite']);
+
+Route::get('/api/category/{slug}/posts-infinite-scroll', [AjaxController::class, 'getCategoryPostsInfiniteScroll']);
+Route::get('/api/category/{slug}/related-posts', [AjaxController::class, 'getRelatedCategoryPosts']);
+Route::get('/api/most-watched-posts', [AjaxController::class, 'getMostWatchedPosts']);
+
+Route::get('/api/post/{id}/navigation', [AjaxController::class, 'getPostNavigation']);
+Route::get('/api/post/{id}/related', [AjaxController::class, 'getRelatedPosts']);
+Route::get('/api/post/{id}/comments', [AjaxController::class, 'getPostComments']);
+Route::post('/api/post/{id}/comment', [AjaxController::class, 'submitComment']);
+Route::get('/api/post/{id}/comments/more', [AjaxController::class, 'loadMoreComments']);
 
 Route::get('/lang/{lang}', function ($lang) {
     // dd($lang);
@@ -174,8 +184,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::name('frontend.')->group(function () {
     Route::get('/', [FrontendHomeController::class, 'home'])->name('home');
     // Route::get('/posts/{slug?}', [FrontendHomeController::class, 'postDetail'])->name('post.details');
-    Route::get('/news/{categorySlug?}/{postSlug?}', [FrontendHomeController::class, 'postDetail'])->name('post.details');
-    Route::get('/category/{slug}', [FrontendHomeController::class, 'category'])->name('category');
+    // Route::get('/news/{category?}/{post?}', [FrontendHomeController::class, 'postDetail'])->name('post.details');
+    // Route::get('/category/{slug}', [FrontendHomeController::class, 'category'])->name('category');
+    Route::get('/news', [FrontendHomeController::class, 'postDetail'])->name('news.index');
+
+Route::get('/news/{category}', [FrontendHomeController::class, 'postDetail'])->name('news.category');
+
+Route::get('/news/{category}/{post}', [FrontendHomeController::class, 'postDetail'])->name('news.show');
     Route::post('/newsletter/store', [FrontendHomeController::class, 'newsletterStore'])->name('newsletter.store');
 });
 

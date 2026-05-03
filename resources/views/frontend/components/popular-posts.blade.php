@@ -11,7 +11,7 @@
                         <div class="post-header panel vstack justify-between gap-1">
                             <h3 class="post-title h6 m-0">
                                 <a class="text-none hover:text-primary duration-150"
-                                    href="{{ route('frontend.post.details', $post->slug) }}">
+                                    href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}">
                                     {{ $post->title }}
                                 </a>
                             </h3>
@@ -22,7 +22,7 @@
                                             <span>{{ $post->published_at->diffForHumans() }}</span>
                                         </div>
                                         <div>
-                                            <a href="{{ route('frontend.post.details', $post->slug) }}#comments"
+                                            <a href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}#comments"
                                                 class="post-comments text-none hstack gap-narrow">
                                                 <i class="icon-narrow unicon-chat"></i>
                                                 <span>{{ $post->comments_count ?? 0 }}</span>

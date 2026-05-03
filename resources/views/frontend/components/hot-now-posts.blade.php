@@ -15,12 +15,12 @@
                             data-uc-img="loading: lazy"
                             loading="lazy">
                     </div>
-                    <a href="{{ route('frontend.post.details', $post->slug) }}" class="position-cover"></a>
+                    <a href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}" class="position-cover"></a>
                 </div>
                 <div class="post-header panel vstack gap-1">
                     <h3 class="post-title h6 m-0 text-truncate-2">
                         <a class="text-none hover:text-primary duration-150"
-                            href="{{ route('frontend.post.details', $post->slug) }}">
+                            href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}">
                             {{ $post->title }}
                         </a>
                     </h3>
@@ -34,13 +34,13 @@
                         <div>·</div>
                         <div>
                             <div class="hstack gap-narrow">
-                                <i class="unicon-heart"></i>
+                                <i class="unicon-favorite"></i>
                                 <span>{{ $post->likes_count ?? 0 }}</span>
                             </div>
                         </div>
                         <div>·</div>
                         <div>
-                            <a href="{{ route('frontend.post.details', $post->slug) }}#comments"
+                            <a href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}#comments"
                                 class="post-comments text-none hstack gap-narrow">
                                 <i class="icon-narrow unicon-chat"></i>
                                 <span>{{ $post->comments_count ?? 0 }}</span>

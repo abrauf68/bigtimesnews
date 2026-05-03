@@ -26,14 +26,14 @@
                                                                     alt="{{ $post->title }}"
                                                                     data-uc-img="loading: lazy">
                                                             </div>
-                                                            <a href="{{ route('frontend.post.details', $post->slug) }}" class="position-cover"></a>
+                                                            <a href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}" class="position-cover"></a>
                                                         </div>
                                                     </div>
                                                     <div>
                                                         <div class="post-header panel vstack justify-between gap-1">
                                                             <h3 class="post-title h6 m-0 text-truncate-2">
                                                                 <a class="text-none hover:text-primary duration-150"
-                                                                    href="{{ route('frontend.post.details', $post->slug) }}">
+                                                                    href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}">
                                                                     {{ $post->title }}
                                                                 </a>
                                                             </h3>

@@ -14,7 +14,7 @@
                             data-uc-img="loading: lazy"
                             loading="lazy">
                     </div>
-                    <a href="{{ route('frontend.post.details', $post->slug) }}" class="position-cover"></a>
+                    <a href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}" class="position-cover"></a>
                 </div>
             </div>
             <div>
@@ -24,7 +24,7 @@
                     </div>
                     <h3 class="post-title h5 lg:h4 m-0 text-truncate-2">
                         <a class="text-none hover:text-primary duration-150"
-                            href="{{ route('frontend.post.details', $post->slug) }}">
+                            href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}">
                             {{ $post->title }}
                         </a>
                     </h3>
@@ -35,7 +35,7 @@
                         </div>
                         <div>·</div>
                         <div class="hstack gap-1">
-                            <i class="unicon-heart"></i>
+                            <i class="unicon-favorite"></i>
                             <span>{{ $post->likes_count ?? 0 }}</span>
                         </div>
                         <div>·</div>
@@ -49,7 +49,7 @@
                     {{ Str::limit(strip_tags($post->content), 150) }}
                 </p>
                 <div class="post-link">
-                    <a href="{{ route('frontend.post.details', $post->slug) }}"
+                    <a href="{{ route('frontend.news.show', ['category' => $post->category->slug, 'post' => $post->slug]) }}"
                         class="link fs-7 fw-bold text-uppercase text-none mt-1 pb-narrow p-0 border-bottom dark:text-white">
                         <span>Read more</span>
                         <i class="icon-1 unicon-chevron-right ms-1"></i>

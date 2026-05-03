@@ -25,7 +25,7 @@
                                 <figure hidden class="post-featured-image panel m-0">
                                     <canvas class="h-300px sm:h-400px lg:h-500px"></canvas>
                                     <img class="media-cover image" src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}" alt="Hidden Gems: Underrated Travel Destinations Around the World" data-uc-scrollspy="cls: uc-animation-kenburns; repeat: true">
-                                    <a href="#" class="position-cover"></a>
+                                    <a href="{{ route('frontend.news.show', [$post->category->slug, $post->slug]) }}" class="position-cover"></a>
                                 </figure>
                                 <div class="featured-image bg-gray-25 dark:bg-gray-800">
                                     <canvas class="min-h-300px lg:min-h-500px"></canvas>
@@ -36,11 +36,11 @@
                                     <div class="post-header panel position-absolute bottom-0 vstack justify-between gap-2 xl:gap-4 max-w-600px mb-4 xl:mb-8">
                                         <div class="post-top hstack gap-narrow">
                                             <div class="post-category hstack gap-narrow fs-7 fw-bold h-24px px-1 rounded-1 shadow-xs bg-white text-primary">
-                                                <a class="text-none" href="#">{{ $post->category->name ?? 'Uncategorized' }}</a>
+                                                <a class="text-none" href="{{ route('frontend.news.category', $post->category->slug) }}">{{ $post->category->name ?? 'Uncategorized' }}</a>
                                             </div>
                                         </div>
                                         <h3 class="post-title h4 lg:h3 xl:h2 m-0 text-truncate-2" data-swiper-parallax="-48">
-                                            <a class="text-none" href="#">{{ $post->title }}</a>
+                                            <a class="text-none" href="{{ route('frontend.news.show', [$post->category->slug, $post->slug]) }}">{{ $post->title }}</a>
                                         </h3>
                                         <div>
                                             <div class="post-meta panel hstack justify-between fs-7 fw-medium text-gray-900 dark:text-white text-opacity-60 d-none md:d-flex">

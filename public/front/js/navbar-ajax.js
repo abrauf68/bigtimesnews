@@ -41,8 +41,6 @@ class NavbarDropdownManager {
                 }, 300);
             });
         });
-
-        console.log(`Setup ${dropdownItems.length} dropdowns`);
     }
 
     async loadDropdownContent(item) {
@@ -134,7 +132,7 @@ class NavbarDropdownManager {
                     targetPanel.innerHTML = `
                         <div class="col-12 text-center py-5">
                             <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                                <span class="visually-hidden"></span>
                             </div>
                             <p class="mt-2">Loading posts...</p>
                         </div>

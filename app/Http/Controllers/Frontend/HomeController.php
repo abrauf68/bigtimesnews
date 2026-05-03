@@ -63,10 +63,35 @@ class HomeController extends Controller
         }
     }
 
-    public function postDetail($slug = null)
+    public function postDetail($categorySlug = null, $postSlug = null)
     {
         try {
-            $postsQuery = Post::with('category', 'author')->withCount('comments')->where('status', 'published');
+            if($categorySlug && $postSlug)
+            {
+                $category = Category::where('slug', $categorySlug)->first();
+                if(!$category) {
+                    abort(404);
+                }
+
+                // Get the main post ONLY - lightweight query
+                $post = Post::with('category:id,name,slug', 'author')
+                    ->where('slug', $postSlug)
+                    ->where('category_id', $category->id)
+                    ->where('status', 'published')
+                    ->firstOrFail();
+
+                // Increment views
+                $post->increment('views');
+
+                // Get top categories for sidebar (lightweight)
+                $topCategories = Category::withCount('posts')
+                    ->orderBy('posts_count', 'desc')
+                    ->limit(5)
+                    ->get();
+
+                return view('frontend.pages.news.single-post', compact('post', 'category', 'topCategories'));
+            }
+            $postsQuery = Post::with('category:id,name,slug', 'author')->withCount('comments')->where('status', 'published');
 
             if (request()->filled('search')) {
                 $search = request('search');
@@ -76,15 +101,21 @@ class HomeController extends Controller
                 });
             }
 
-            $topCategories = Category::withCount(['posts' => function ($query) {
-                    $query->where('status', 'published');
-                }])->orderByDesc('posts_count')->take(5)->get();
+            if($categorySlug && !$postSlug)
+            {
+                $category = Category::where('slug', $categorySlug)->first();
+                if($category)
+                {
+                    $posts = $postsQuery->where('category_id', $category->id)->latest()->limit(5)->get();
+                    return view('frontend.pages.news.single-category', compact('category', 'posts'));
+                }
+            }
 
             $page = Page::where('page_name', 'news')->first();
 
             $posts = $postsQuery->latest()->paginate(3)->withQueryString();
 
-            return view('frontend.pages.news.main', compact('posts','topCategories', 'page'));
+            return view('frontend.pages.news.main', compact('posts', 'page'));
         } catch (\Throwable $th) {
             Log::error('Error loading blogs page: ' . $th->getMessage());
             return redirect()->back()->with('error', 'An error occurred while loading the blogs page.');

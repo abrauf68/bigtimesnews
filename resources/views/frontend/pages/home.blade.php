@@ -22,7 +22,7 @@
     <!-- Featured Slider Section -->
     @include('frontend.sections.hot-now')
 
-    @include('frontend.sections.category-sections')
+    @include('frontend.sections.category-sections-home')
 
     @include('frontend.sections.latest-news')
 @endsection
