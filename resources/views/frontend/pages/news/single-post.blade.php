@@ -62,28 +62,28 @@
     </div>
     <div class="panel mt-4 lg:mt-6 xl:mt-9">
         <div class="container max-w-lg">
-            <div class="post-content panel fs-6 md:fs-5" data-uc-lightbox="animation: scale">
+            <div class="post-content panel fs-6 md:fs-5" data-uc-lightbox="animation: scale mb-2">
                 {!! $post->content !!}
                 <!-- Try these unicon variants -->
-                    <div class="post-stats panel hstack justify-center gap-4 mt-2">
-                        <div class="hstack gap-2">
-                            <button class="like-button btn btn-sm p-0 text-none hstack gap-1" data-post-id="{{ $post->id }}" style="background: none; border: none; cursor: pointer;">
-                                <i class="unicon-favorite icon-1 like-icon"></i>
-                                <span id="likes-count-{{ $post->id }}" class="likes-count">{{ $post->likes_count ?? 0 }}</span>
-                            </button>
-                        </div>
-                        <div class="hstack gap-2">
-                            <i class="unicon-chat icon-1"></i>
-                            <span id="comments-count">{{ $post->comments_count ?? 0 }}</span>
-                        </div>
-                        <div class="hstack gap-2">
-                            <i class="unicon-view icon-1"></i>
-                            <span id="views-count">{{ $post->views ?? 0 }}</span>
-                        </div>
+                <div class="post-stats panel hstack justify-center gap-4 mt-2 mb-2">
+                    <div class="hstack gap-2">
+                        <button class="like-button btn btn-sm p-0 text-none hstack gap-1" data-post-id="{{ $post->id }}" style="background: none; border: none; cursor: pointer;">
+                            <i class="unicon-favorite icon-1 like-icon"></i>
+                            <span id="likes-count-{{ $post->id }}" class="likes-count">{{ $post->likes_count ?? 0 }}</span>
+                        </button>
                     </div>
+                    <div class="hstack gap-2">
+                        <i class="unicon-chat icon-1"></i>
+                        <span id="comments-count">{{ $post->comments_count ?? 0 }}</span>
+                    </div>
+                    <div class="hstack gap-2">
+                        <i class="unicon-view icon-1"></i>
+                        <span id="views-count">{{ $post->views ?? 0 }}</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="post-footer panel vstack sm:hstack gap-3 justify-between justifybetween border-top py-4 mt-4 xl:py-9 xl:mt-9">
+            <div class="post-footer panel vstack sm:hstack gap-3 justify-between justifybetween border-top py-1">
                 <ul class="nav-x gap-narrow text-primary">
                     <li><span class="text-black dark:text-white me-narrow">Tags:</span></li>
                     @foreach (json_decode($post->tags ?? '[]') as $tag)
@@ -99,13 +99,13 @@
             </div>
 
             <!-- Post Navigation (AJAX Loaded) -->
-            <div class="post-navigation panel vstack sm:hstack justify-between gap-2 mt-8 xl:mt-9 md:wrap" id="post-navigation-container">
+            <div class="post-navigation panel vstack sm:hstack justify-between gap-2 mt-2 md:wrap" id="post-navigation-container">
                 <div class="w-100 lg:w-1/2 skeleton-post-nav" style="height: 100px; background: #e0e0e0; border-radius: 8px;"></div>
                 <div class="w-100 lg:w-1/2 skeleton-post-nav" style="height: 100px; background: #e0e0e0; border-radius: 8px;"></div>
             </div>
 
             <!-- Related Posts (AJAX Loaded) -->
-            <div class="post-related panel border-top pt-2 mt-8 xl:mt-9">
+            <div class="post-related panel border-top pt-2 mt-5">
                 <h4 class="h5 xl:h4 mb-5 xl:mb-6">Related to this topic:</h4>
                 <div id="related-posts-container">
                     <div class="row child-cols-6 md:child-cols-3 gx-2 gy-4 sm:gx-3 sm:gy-6">
