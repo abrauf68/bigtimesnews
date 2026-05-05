@@ -51,13 +51,16 @@
                     <i class="unicon-search icon-1"></i>
                 </span>
             </form>
-            <ul class="nav-y gap-narrow fw-bold fs-5" data-uc-nav>
-                <li><a href="#">Latest</a></li>
-                <li><a href="#">Trending</a></li>
-                <li class="hr opacity-10 my-1"></li>
-                <li><a href="sign-in.html">Sign in</a></li>
-                <li><a href="sign-up.html">Create an account</a></li>
-            </ul>
+
+            <!-- About Paragraph Section -->
+            <div class="about-section mb-4">
+                <p class="text-gray-700 dark:text-gray-300 fs-6 leading-relaxed">
+                    Welcome to {{ \App\Helpers\Helper::getCompanyName() }} — your trusted source for the latest headlines, trending stories, and in-depth coverage
+                    on technology, business, and global affairs. We are dedicated to delivering accurate, timely, and insightful
+                    journalism to keep you informed and engaged with the world around you.
+                </p>
+            </div>
+
             <ul class="social-icons nav-x mt-4">
                 <li>
                     <a href="#"><i class="unicon-logo-medium icon-2"></i></a>
@@ -92,7 +95,7 @@
             <i class="icon icon-4 unicon-bookmark mb-2 text-primary dark:text-white"></i>
             <h2 class="h4 md:h3 m-0">Saved articles</h2>
             <p class="fs-5 opacity-60">You have not yet added any article to your bookmarks!</p>
-            <a href="index.html" class="btn btn-sm btn-primary mt-2 uc-modal-close">Browse articles</a>
+            <a href="{{ route('frontend.home') }}" class="btn btn-sm btn-primary mt-2 uc-modal-close">Browse articles</a>
         </div>
     </div>
 </div>
@@ -119,13 +122,12 @@
                     <div class="panel vstack justify-center items-center gap-2 sm:gap-4 text-center">
                         <h4 class="h5 lg:h4 m-0">Log in</h4>
                         <div class="panel vstack gap-2 w-100 sm:w-350px mx-auto">
-                            <form class="vstack gap-2">
-                                <input
-                                    class="form-control form-control-sm h-40px w-full fs-6 bg-white dark:bg-gray-800 dark:bg-gray-800 dark:border-white dark:border-opacity-15 dark:border-opacity-15"
-                                    type="email" placeholder="Your email" required>
-                                <input
-                                    class="form-control form-control-sm h-40px w-full fs-6 bg-white dark:bg-gray-800 dark:bg-gray-800 dark:border-white dark:border-opacity-15 dark:border-opacity-15"
-                                    type="password" placeholder="Password" autocomplete="new-password" required>
+                            <form action="{{ route('login.attempt') }}" method="POST" class="vstack gap-2">
+                                @csrf
+                                <input class="form-control form-control-sm h-40px w-full fs-6 bg-white dark:bg-gray-800 dark:bg-gray-800 dark:border-white dark:border-opacity-15 dark:border-opacity-15"
+                                    type="text" placeholder="Your email or username" name="email_username" required>
+                                <input class="form-control form-control-sm h-40px w-full fs-6 bg-white dark:bg-gray-800 dark:bg-gray-800 dark:border-white dark:border-opacity-15 dark:border-opacity-15"
+                                    type="password" placeholder="Password" name="password" autocomplete="new-password" required>
                                 <div class="hstack justify-between items-start text-start">
                                     <div class="form-check text-start">
                                         <input
@@ -167,23 +169,24 @@
                     <div class="panel vstack justify-center items-center gap-2 sm:gap-4 text-center">
                         <h4 class="h5 lg:h4 m-0">Create an account</h4>
                         <div class="panel vstack gap-2 w-100 sm:w-350px mx-auto">
-                            <form class="vstack gap-2">
+                            <form action="{{ route('register.attempt') }}" method="POST" class="vstack gap-2">
+                                @csrf
                                 <input
                                     class="form-control form-control-sm h-40px w-full fs-6 bg-white dark:bg-gray-800 dark:border-white dark:border-opacity-15"
-                                    type="text" placeholder="Full name" required>
+                                    type="text" placeholder="Full name" name="name" required>
                                 <input
                                     class="form-control form-control-sm h-40px w-full fs-6 bg-white dark:bg-gray-800 dark:border-white dark:border-opacity-15"
-                                    type="email" placeholder="Your email" required>
+                                    type="email" placeholder="Your email" name="email" required>
                                 <input
                                     class="form-control form-control-sm h-40px w-full fs-6 bg-white dark:bg-gray-800 dark:border-white dark:border-opacity-15"
-                                    type="password" placeholder="Password" autocomplete="new-password" required>
+                                    type="password" placeholder="Password" name="password" autocomplete="new-password" required>
                                 <input
                                     class="form-control form-control-sm h-40px w-full fs-6 bg-white dark:bg-gray-800 dark:border-white dark:border-opacity-15"
-                                    type="password" placeholder="Re-enter Password" autocomplete="new-password"
+                                    type="password" placeholder="Re-enter Password" name="password_confirmation" autocomplete="new-password"
                                     required>
                                 <div class="hstack text-start">
                                     <div class="form-check text-start">
-                                        <input id="input_checkbox_accept_terms"
+                                        <input id="input_checkbox_accept_terms" name="terms"
                                             class="form-check-input rounded-0 dark:bg-gray-800 dark:border-white dark:border-opacity-15"
                                             type="checkbox" required>
                                         <label for="input_checkbox_accept_terms"
@@ -439,10 +442,17 @@
                             </a>
                         </div>
                         <div class="uc-navbar-item d-none lg:d-inline-flex">
-                            <a class="uc-account-trigger position-relative btn btn-sm border-0 p-0 gap-narrow duration-0 dark:text-white"
-                                href="#uc-account-modal" data-uc-toggle>
-                                <i class="icon icon-2 fw-medium unicon-user-avatar"></i>
-                            </a>
+                            @if (Auth::user())
+                                <a class="position-relative btn btn-sm border-0 p-0 gap-narrow duration-0 dark:text-white"
+                                    href="#">
+                                    <img src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}&background=random" alt="{{ Auth::user()->name }}" class="rounded-circle" style="width: 32px; height: 32px;">
+                                </a>
+                            @else
+                                <a class="uc-account-trigger position-relative btn btn-sm border-0 p-0 gap-narrow duration-0 dark:text-white"
+                                    href="#uc-account-modal" data-uc-toggle>
+                                    <i class="icon icon-2 fw-medium unicon-user-avatar"></i>
+                                </a>
+                            @endif
                         </div>
                         <div class="uc-navbar-item d-none lg:d-inline-flex">
                             <a class="uc-search-trigger cstack text-none text-dark dark:text-white"
