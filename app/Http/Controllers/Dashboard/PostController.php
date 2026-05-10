@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Yajra\DataTables\Facades\DataTables;
 
 class PostController extends Controller
 {
@@ -24,12 +25,69 @@ class PostController extends Controller
     {
         $this->authorize('view post');
         try {
-            $posts = Post::with('category', 'user')->get();
-            return view('dashboard.posts.index', compact('posts'));
+            return view('dashboard.posts.index');
         } catch (\Throwable $th) {
             Log::error('Posts Index Failed', ['error' => $th->getMessage()]);
             return redirect()->back()->with('error', "Something went wrong! Please try again later");
             throw $th;
+        }
+    }
+
+    public function getPostsData()
+    {
+        try {
+            $posts = Post::with('category')->latest()->select('posts.*');
+
+            return DataTables::of($posts)
+                ->addIndexColumn()
+                ->editColumn('title', function ($post) {
+                    return \Illuminate\Support\Str::limit($post->title, 20, '...');
+                })
+                ->editColumn('category', function ($post) {
+                    return $post->category ? $post->category->name : 'N/A';
+                })
+                ->editColumn('created_at', function ($post) {
+                    return $post->created_at->format('d M Y');
+                })
+                ->editColumn('status', function ($post) {
+                    $badgeClass = $post->status == 'published' ? 'success' : 'secondary';
+                    return '<span class="badge me-4 bg-label-' . $badgeClass . '">' . ucfirst($post->status) . '</span>';
+                })
+                ->addColumn('action', function ($post) {
+                    $actions = '';
+
+                    if (auth()->user()->can('delete post')) {
+                        $actions .= '<form action="' . route('dashboard.posts.destroy', $post->id) . '" method="POST" class="d-inline">
+                                    <input type="hidden" name="_token" value="' . csrf_token() . '">
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <a href="#" class="btn btn-icon btn-text-danger waves-effect waves-light rounded-pill delete-record delete_confirmation" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Post">
+                                        <i class="ti ti-trash ti-md"></i>
+                                    </a>
+                                </form>';
+                    }
+
+                    if (auth()->user()->can('update post')) {
+                        $actions .= '<span class="text-nowrap d-inline-block">
+                                    <a href="' . route('dashboard.posts.edit', $post->id) . '" class="btn btn-icon btn-text-primary waves-effect waves-light rounded-pill me-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Post">
+                                        <i class="ti ti-edit ti-md"></i>
+                                    </a>
+                                </span>';
+
+                        $toggleIcon = $post->status == 'published' ? 'ti-toggle-right text-success' : 'ti-toggle-left text-secondary';
+                        $actions .= '<span class="text-nowrap d-inline-block">
+                                    <a href="' . route('dashboard.posts.status.update', $post->id) . '" class="btn btn-icon btn-text-primary waves-effect waves-light rounded-pill me-1" data-bs-toggle="tooltip" data-bs-placement="top" title="' . ($post->status == 'published' ? 'Draft Post' : 'Publish Post') . '">
+                                        <i class="ti ' . $toggleIcon . ' ti-md"></i>
+                                    </a>
+                                </span>';
+                    }
+
+                    return $actions;
+                })
+                ->rawColumns(['status', 'action'])
+                ->make(true);
+        } catch (\Throwable $th) {
+            Log::error('Posts DataTable Failed', ['error' => $th->getMessage()]);
+            return response()->json(['error' => 'Something went wrong!'], 500);
         }
     }
 
@@ -98,8 +156,7 @@ class PostController extends Controller
             $post->meta_title = $request->meta_title;
             $post->meta_description = $request->meta_description;
             $post->meta_keywords = $request->meta_keywords;
-            if($request->tags)
-            {
+            if ($request->tags) {
                 $tags = json_encode(
                     collect(json_decode($request->tags, true))->pluck('value')->all()
                 );

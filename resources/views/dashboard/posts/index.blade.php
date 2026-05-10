@@ -3,12 +3,26 @@
 @section('title', __('Posts'))
 
 @section('css')
+<style>
+    /* Add to your custom CSS file */
+.dataTables_processing {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    box-shadow: none;
+    font-size: 1.2rem;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+}
+</style>
 @endsection
-
 
 @section('breadcrumb-items')
     <li class="breadcrumb-item active">{{ __('Posts') }}</li>
 @endsection
+
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
         <!-- Posts List Table -->
@@ -16,86 +30,25 @@
             <div class="card-header">
                 @canany(['create post'])
                     <a href="{{ route('dashboard.posts.create') }}" class="add-new btn btn-primary waves-effect waves-light">
-                        <i class="ti ti-plus me-0 me-sm-1 ti-xs"></i><span
-                            class="d-none d-sm-inline-block">{{ __('Add New Post') }}</span>
+                        <i class="ti ti-plus me-0 me-sm-1 ti-xs"></i>
+                        <span class="d-none d-sm-inline-block">{{ __('Add New Post') }}</span>
                     </a>
                 @endcan
             </div>
             <div class="card-datatable table-responsive">
-                <table class="datatables-users table border-top custom-datatables">
+                <table class="datatables-posts table border-top" id="posts-table">
                     <thead>
                         <tr>
                             <th>{{ __('Sr.') }}</th>
                             <th>{{ __('Title') }}</th>
                             <th>{{ __('Category') }}</th>
-                            <th>{{ __('Author') }}</th>
                             <th>{{ __('Created At') }}</th>
                             <th>{{ __('Status') }}</th>
-                            @canany(['delete post', 'update post', 'view post'])<th>{{ __('Action') }}</th>@endcan
+                            @canany(['delete post', 'update post', 'view post'])
+                                <th>{{ __('Action') }}</th>
+                            @endcan
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach ($posts as $index => $post)
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ \Illuminate\Support\Str::limit($post->title, 20, '...') }}</td>
-                                <td>{{ $post->category ? $post->category->name : 'N/A' }}</td>
-                                <td>{{ $post->author ? $post->author->name : 'N/A' }}</td>
-                                <td>{{ $post->created_at->format('d M Y') }}</td>
-                                <td>
-                                    <span class="badge me-4 bg-label-{{ $post->status == 'published' ? 'success' : 'secondary' }}">
-                                        {{ ucfirst($post->status) }}
-                                    </span>
-                                </td>
-                                @canany(['delete post', 'update post', 'view post'])
-                                    <td class="d-flex">
-                                        @canany(['delete post'])
-                                            <form action="{{ route('dashboard.posts.destroy', $post->id) }}" method="POST">
-                                                @method('DELETE')
-                                                @csrf
-                                                <a href="#" type="submit"
-                                                    class="btn btn-icon btn-text-danger waves-effect waves-light rounded-pill delete-record delete_confirmation"
-                                                    data-bs-toggle="tooltip" data-bs-placement="top"
-                                                    title="{{ __('Delete Post') }}">
-                                                    <i class="ti ti-trash ti-md"></i>
-                                                </a>
-                                            </form>
-                                        @endcan
-                                        @canany(['update post'])
-                                            <span class="text-nowrap">
-                                                <a href="{{ route('dashboard.posts.edit', $post->id) }}"
-                                                    class="btn btn-icon btn-text-primary waves-effect waves-light rounded-pill me-1"
-                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Edit Post') }}">
-                                                    <i class="ti ti-edit ti-md"></i>
-                                                </a>
-                                            </span>
-                                            <span class="text-nowrap">
-                                                <a href="{{ route('dashboard.posts.status.update', $post->id) }}"
-                                                    class="btn btn-icon btn-text-primary waves-effect waves-light rounded-pill me-1"
-                                                    data-bs-toggle="tooltip" data-bs-placement="top"
-                                                    title="{{ $post->status == 'published' ? __('Draft Post') : __('Publish Post') }}">
-                                                    @if ($post->status == 'published')
-                                                        <i class="ti ti-toggle-right ti-md text-success"></i>
-                                                    @else
-                                                        <i class="ti ti-toggle-left ti-md text-secondary"></i>
-                                                    @endif
-                                                </a>
-                                            </span>
-                                        @endcan
-                                        {{-- @canany(['view post'])
-                                            <span class="text-nowrap">
-                                                <a href="{{ route('dashboard.blog-comments.index', $blog->id) }}"
-                                                    class="btn btn-icon btn-text-warning waves-effect waves-light rounded-pill me-1"
-                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('View Comments') }}">
-                                                    <i class="ti ti-message ti-md"></i>
-                                                </a>
-                                            </span>
-                                        @endcan --}}
-                                    </td>
-                                @endcan
-                            </tr>
-                        @endforeach
-                    </tbody>
                 </table>
             </div>
         </div>
@@ -105,7 +58,58 @@
 @section('script')
     <script>
         $(document).ready(function() {
-            //
+            $('#posts-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: "{{ route('posts.data') }}",
+                    type: "GET",
+                    error: function(xhr, error, thrown) {
+                        console.log('DataTable Error:', error);
+                        toastr.error('Failed to load posts data');
+                    }
+                },
+                columns: [
+                    { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+                    { data: 'title', name: 'title' },
+                    { data: 'category', name: 'category.name' },
+                    { data: 'created_at', name: 'created_at' },
+                    { data: 'status', name: 'status', orderable: true, searchable: true },
+                    { data: 'action', name: 'action', orderable: false, searchable: false }
+                ],
+                order: [[4, 'desc']], // Sort by created_at desc
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
+                    emptyTable: 'No posts found',
+                    zeroRecords: 'No matching posts found'
+                },
+                drawCallback: function() {
+                    // Reinitialize tooltips
+                    $('[data-bs-toggle="tooltip"]').tooltip();
+
+                    // Reinitialize delete confirmation
+                    $('.delete_confirmation').off('click').on('click', function(e) {
+                        e.preventDefault();
+                        let form = $(this).closest('form');
+
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: "You won't be able to revert this!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Yes, delete it!'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.submit();
+                            }
+                        });
+                    });
+                }
+            });
         });
     </script>
 @endsection

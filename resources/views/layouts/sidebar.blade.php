@@ -50,6 +50,14 @@
                 </a>
             </li>
         @endcan
+        @can(['view comment'])
+            <li class="menu-item {{ request()->routeIs('dashboard.comments.*') ? 'active' : '' }}">
+                <a href="{{ route('dashboard.comments.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-news"></i>
+                    <div>{{ __('Comments') }}</div>
+                </a>
+            </li>
+        @endcan
         @canany(['view user', 'view archived user'])
             <li
                 class="menu-item {{ request()->routeIs('dashboard.user.*') || request()->routeIs('dashboard.archived-user.*') ? 'open' : '' }}">

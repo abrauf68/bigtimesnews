@@ -56,6 +56,11 @@ class UserRolePermissionSeeder extends Seeder
         Permission::create(['name' => 'update post']);
         Permission::create(['name' => 'delete post']);
 
+        Permission::create(['name' => 'view comment']);
+        Permission::create(['name' => 'create comment']);
+        Permission::create(['name' => 'update comment']);
+        Permission::create(['name' => 'delete comment']);
+
         $superAdminRole = Role::create(['name' => 'super-admin']);
         $authorRole = Role::create(['name' => 'author']);
         $userRole = Role::create(['name' => 'user']);

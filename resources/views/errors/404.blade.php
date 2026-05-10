@@ -6,14 +6,22 @@
 @endsection
 
 @section('content')
-    <div class="misc-wrapper">
-        <h1 class="mb-2 mx-2" style="line-height: 6rem; font-size: 6rem">404</h1>
-        <h4 class="mb-2 mx-2">{{__('Page Not Found️ ⚠️')}}</h4>
-        <p class="mb-6 mx-2">{{__("we couldn't find the page you are looking for")}}</p>
-        <a href="{{ route('dashboard') }}" class="btn btn-primary mb-10">{{__('Back to home')}}</a>
-        <div class="mt-4">
-            <img src="{{ asset('assets/img/illustrations/page-misc-error.png') }}" alt="page-misc-error" width="225"
-                class="img-fluid" />
+    <div class="section py-6 lg:py-8 xl:py-10">
+        <div class="container max-w-xl">
+            <div class="panel vstack justify-center items-center gap-2 sm:gap-4 text-center">
+                <h2 class="display-5 sm:display-3 lg:display-2 xl:display-1 text-primary">404</h2>
+                <h1 class="h3 sm:h1 m-0">Page not found</h1>
+                <p class="fs-6 md:fs-5">
+                    Sorry, the page you seems looking for, <br>
+                    has been moved, redirected or removed permanently.
+                </p>
+                <a href="{{ route('frontend.home') }}" class="animate-btn btn btn-md btn-primary text-none gap-0">
+                    <span>Go back home</span>
+                    <i class="icon icon-narrow unicon-arrow-left fw-bold"></i>
+                </a>
+                <p>Why Not try to search again? <a class="uc-link" href="#uc-search-modal" data-uc-toggle>Search
+                        now</a></p>
+            </div>
         </div>
     </div>
 @endsection

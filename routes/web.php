@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Dashboard\AuthorController;
 use App\Http\Controllers\Dashboard\CategoryController;
+use App\Http\Controllers\Dashboard\CommentController;
 use App\Http\Controllers\Dashboard\HomeController;
 use App\Http\Controllers\Dashboard\NotificationController;
 use App\Http\Controllers\Dashboard\PostController;
@@ -174,10 +175,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
             //posts
             Route::resource('posts', PostController::class);
             Route::get('posts/status/{id}', [PostController::class, 'updateStatus'])->name('posts.status.update');
+
+            // //posts
+            // Route::resource('comments', CommentController::class);
+            // Route::get('comments/status/{id}', [CommentController::class, 'updateStatus'])->name('comments.status.update');
+
+            // Comments Routes
+            Route::prefix('comments')->name('comments.')->group(function () {
+                Route::get('/', [CommentController::class, 'index'])->name('index');
+                Route::get('/data', [CommentController::class, 'getCommentsData'])->name('data');
+                Route::get('/{comment}', [CommentController::class, 'show'])->name('show');
+                Route::delete('/{comment}', [CommentController::class, 'destroy'])->name('destroy');
+                Route::put('/{comment}/approve', [CommentController::class, 'approve'])->name('approve');
+                Route::put('/{comment}/spam', [CommentController::class, 'markAsSpam'])->name('spam');
+                Route::put('/{comment}/status', [CommentController::class, 'updateStatus'])->name('status.update');
+                // New routes for replies and AJAX
+                Route::post('/{comment}/reply', [CommentController::class, 'reply'])->name('reply');
+                Route::put('/{comment}/status-ajax', [CommentController::class, 'updateStatusAjax'])->name('status.ajax');
+                Route::delete('/reply/{reply}', [CommentController::class, 'deleteReply'])->name('reply.delete');
+            });
         });
     });
 
     Route::post('/posts/upload-image', [PostController::class, 'uploadImage']);
+    Route::get('/posts/data', [PostController::class, 'getPostsData'])->name('posts.data');
+
+    Route::get('/comments/data', [CommentController::class, 'getCommentsData'])->name('comments.data');
+
 });
 
 // Frontend Pages Routes

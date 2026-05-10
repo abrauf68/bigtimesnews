@@ -31,7 +31,7 @@ class DatabaseSeeder extends Seeder
             PageSeeder::class,
             CategorySeeder::class,
             AuthorSeeder::class,
-            PostSeeder::class,
+            // PostSeeder::class,
         ]);
     }
 }
