@@ -8,7 +8,7 @@
                         <div class="hstack gap-2">
                             <span class="fw-bold text-primary fs-5">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</span>
                             <div class="post-category">
-                                <a class="text-none text-primary small" href="{{ route('frontend.news.show', $post->category->slug) }}">
+                                <a class="text-none text-primary small" href="{{ route('frontend.news.category', $post->category->slug) }}">
                                     {{ $post->category->name ?? 'Uncategorized' }}
                                 </a>
                             </div>
