@@ -4,7 +4,6 @@
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/tagify/tagify.css') }}" />
-    <link rel="stylesheet" href="{{ asset('frontAssets/css/tekmino-icon.css') }}" />
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
 @endsection
 
@@ -126,7 +125,7 @@
                         <div class="mb-4 col-md-12">
                             <label for="tags" class="form-label">Tags</label>
                             <input id="tags" name="tags" class="form-control @error('tags') is-invalid @enderror"
-                                placeholder="Select tags" value="{{ old('tags') }}" />
+                                placeholder="Select tags" value="{{ old('tags', $post->tags) }}" />
                             @error('tags')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
