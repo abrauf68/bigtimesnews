@@ -86,7 +86,7 @@
                             @enderror
                         </div>
                         <div class="mb-4 col-md-6">
-                            <label for="meta_image" class="form-label">{{ __('Meta Image') }}</label>
+                            <label for="meta_image" class="form-label">{{ __('Meta Image (1200 x 600)') }}</label>
                             <input class="form-control @error('meta_image') is-invalid @enderror" type="file"
                                 id="meta_image" name="meta_image" accept="image/*" />
                             @error('meta_image')
@@ -99,7 +99,7 @@
                             @endif
                         </div>
                         <div class="mb-4 col-md-6">
-                            <label for="main_image" class="form-label">{{ __('Main Image') }}</label>
+                            <label for="main_image" class="form-label">{{ __('Main Image (1200 x 600)') }}</label>
                             <input class="form-control @error('main_image') is-invalid @enderror" type="file"
                                 id="main_image" name="main_image" accept="image/*" />
                             @error('main_image')

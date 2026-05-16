@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Post;
+use App\Observers\PostObserver;
 use App\Rules\MaxUploadSize;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
@@ -29,5 +31,7 @@ class AppServiceProvider extends ServiceProvider
             $rule->validate($attribute, $value, $fail);
             return !$validator->errors()->has($attribute);
         });
+
+        Post::observe(PostObserver::class);
     }
 }
