@@ -47,5 +47,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="{{ url('favicons/apple-touch-icon.png') }}" />
 <link rel="manifest" href="{{ url('favicons/site.webmanifest') }}" />
 
+<meta name="google-site-verification" content="hznWLkOHa7zqBqtIefDNI9wKxw2sA7d42vBJw97RnuM" />
+
 <!-- Structured data (JSON-LD) pushed in from individual pages -->
 @stack('schema')
