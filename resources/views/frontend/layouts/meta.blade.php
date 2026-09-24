@@ -49,5 +49,15 @@
 
 <meta name="google-site-verification" content="hznWLkOHa7zqBqtIefDNI9wKxw2sA7d42vBJw97RnuM" />
 
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WV06PG4LLK"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-WV06PG4LLK');
+</script>
+
 <!-- Structured data (JSON-LD) pushed in from individual pages -->
 @stack('schema')
