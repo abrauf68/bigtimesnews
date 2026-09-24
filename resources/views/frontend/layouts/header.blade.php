@@ -596,7 +596,7 @@
                                 <span>Live</span>
                             </a>
                         </div>
-                        <div class="uc-navbar-item d-none lg:d-inline-flex">
+                        {{-- <div class="uc-navbar-item d-none lg:d-inline-flex">
                             @if (Auth::user())
                                 <a class="position-relative btn btn-sm border-0 p-0 gap-narrow duration-0 dark:text-white"
                                     href="#">
@@ -610,7 +610,7 @@
                                     <i class="icon icon-2 fw-medium unicon-user-avatar"></i>
                                 </a>
                             @endif
-                        </div>
+                        </div> --}}
                         <div class="uc-navbar-item d-none lg:d-inline-flex">
                             <a class="uc-search-trigger cstack text-none text-dark dark:text-white"
                                 href="#uc-search-modal" data-uc-toggle>

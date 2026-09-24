@@ -63,6 +63,12 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
 }
+.post-content h1, h2, h3, h4, h5, h6, p, li{
+    color: #000 !important;
+}
+.footer-copyright p {
+    color: #fff !important;
+}
 </style>
 @endsection
 

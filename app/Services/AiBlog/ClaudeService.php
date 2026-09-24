@@ -37,13 +37,16 @@ Related context you can use for grounding (may be partial, verify tone rather th
 Target audience: {$countryLabel}.
 
 Requirements:
-- 900 to 1400 words of substantive, well-organized content.
+- 1200 to 1500 words of substantive, well-organized content in content_html (count the visible text, not the HTML tags).
 - Natural, human, editorial tone. Vary sentence length. No robotic transitions like "In conclusion" or "In today's fast-paced world".
-- Use a compelling H1-worthy title, then structure the body with 2-5 H2 sections and H3s where useful.
+- Use a compelling H1-worthy title, then structure the body with 3-6 H2 sections and H3s where useful.
 - Include a short, punchy introduction and a satisfying closing thought (not a generic summary paragraph).
 - Naturally weave in the main keyword and 2-3 related keywords without keyword-stuffing.
 - Do not fabricate specific statistics, quotes, or named sources you are not confident about; write generally and factually instead.
-- Output valid semantic HTML for the body (using <h2>, <h3>, <p>, <ul>/<li>, <strong> etc. only — no <html>/<body> wrapper, no inline styles, no <h1>).
+- Include at least 2 bulleted or numbered lists (<ul>/<ol> with <li>) covering concrete points, steps, or examples — not just decorative.
+- Include exactly one HTML <table> (with <thead>, <tbody>, <tr>, <th>, <td>) giving a genuinely useful at-a-glance breakdown, comparison, or set of facts related to the topic. If the topic has no obvious tabular data, build a sensible "Quick Facts" or "Key Takeaways" table instead — never skip the table.
+- Insert exactly 3 image placeholders as their own line, in plain text (not wrapped in any HTML tag), at natural reading breaks: {{IMAGE_1}} shortly after the introduction, {{IMAGE_2}} roughly in the middle of the article, {{IMAGE_3}} before the closing section.
+- Output valid semantic HTML for the body (using <h2>, <h3>, <p>, <ul>/<ol>/<li>, <table>/<thead>/<tbody>/<tr>/<th>/<td>, <strong> etc. only — no <html>/<body> wrapper, no inline styles, no <h1>).
 
 Return ONLY this JSON object:
 {
@@ -54,12 +57,13 @@ Return ONLY this JSON object:
   "meta_keywords": "string, 5-8 comma separated keywords/phrases",
   "tags": ["3 to 6 short tag strings"],
   "read_time": "string like '4 min read'",
-  "content_html": "string, the full HTML body as described above",
-  "image_search_query": "string, 2-4 words, a concrete, safe-for-work visual search phrase (Unsplash) that matches the article's subject"
+  "content_html": "string, the full HTML body as described above, including the table, lists, and the 3 {{IMAGE_n}} placeholders",
+  "image_search_query": "string, 2-4 words, a concrete, safe-for-work Unsplash search phrase for the article's main/featured image",
+  "image_queries": ["string, 2-4 words, Unsplash search phrase for {{IMAGE_1}}", "string for {{IMAGE_2}}", "string for {{IMAGE_3}}"]
 }
 PROMPT;
 
-        $result = $this->call($this->settings->claude_writer_model, $system, $user, 4000);
+        $result = $this->call($this->settings->claude_writer_model, $system, $user, 6000);
 
         return $this->parseJson($result, 'article generation');
     }
@@ -74,14 +78,17 @@ You are a meticulous human copy editor and SEO QA reviewer.
 You are given a drafted blog post as JSON. Rewrite it so it reads naturally and humanly — remove any robotic AI phrasing,
 repetitive sentence patterns, generic filler, or awkward transitions — while preserving all facts and meaning.
 Also verify and, if needed, fix basic on-page SEO: meta_title <= 60 characters, meta_description <= 155 characters,
-heading structure present, keyword present naturally in the first paragraph.
+heading structure present, keyword present naturally in the first paragraph, content_html still roughly 1200-1500 words.
+Keep the article's <table>, its <ul>/<ol> lists, and the three {{IMAGE_1}}, {{IMAGE_2}}, {{IMAGE_3}} placeholders exactly
+as they are and in the same relative positions — never remove, rename, merge, or wrap them, even while polishing the
+surrounding prose.
 Always respond with ONLY a single valid JSON object, same shape as given to you, no markdown fences, no commentary.
 SYS;
 
-        $user = "Here is the drafted post as JSON. Polish it and return the corrected, humanized, SEO-checked version in the exact same JSON shape (keys: title, slug, meta_title, meta_description, meta_keywords, tags, read_time, content_html, image_search_query):\n\n"
+        $user = "Here is the drafted post as JSON. Polish it and return the corrected, humanized, SEO-checked version in the exact same JSON shape (keys: title, slug, meta_title, meta_description, meta_keywords, tags, read_time, content_html, image_search_query, image_queries):\n\n"
             . json_encode($draft, JSON_UNESCAPED_SLASHES);
 
-        $result = $this->call($this->settings->claude_qa_model, $system, $user, 4000);
+        $result = $this->call($this->settings->claude_qa_model, $system, $user, 6000);
 
         $final = $this->parseJson($result, 'humanize/QA pass');
 
@@ -89,6 +96,15 @@ SYS;
         foreach ($draft as $key => $value) {
             if (!array_key_exists($key, $final) || $final[$key] === null || $final[$key] === '') {
                 $final[$key] = $value;
+            }
+        }
+
+        $draftHtml = (string) ($draft['content_html'] ?? '');
+        $finalHtml = (string) ($final['content_html'] ?? '');
+        foreach (['{{IMAGE_1}}', '{{IMAGE_2}}', '{{IMAGE_3}}'] as $placeholder) {
+            if (str_contains($draftHtml, $placeholder) && !str_contains($finalHtml, $placeholder)) {
+                $final['content_html'] = $draftHtml;
+                break;
             }
         }
 

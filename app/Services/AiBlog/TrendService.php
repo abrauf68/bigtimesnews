@@ -69,9 +69,14 @@ class TrendService
     protected function fetchGoogleTrendsRss(string $geo): array
     {
         try {
-            $response = Http::timeout(20)->get('https://trends.google.com/trends/trendingsearches/daily/rss', [
-                'geo' => $geo,
-            ]);
+            $response = Http::withHeaders([
+                    // Google's trending RSS feed occasionally blocks requests with no user agent
+                    'User-Agent' => 'Mozilla/5.0 (compatible; AI-Blog-Automation/1.0)',
+                ])
+                ->timeout(20)
+                ->get('https://trends.google.com/trending/rss', [
+                    'geo' => $geo,
+                ]);
 
             if (!$response->successful()) {
                 Log::warning('Google Trends RSS request failed', ['geo' => $geo, 'status' => $response->status()]);
@@ -88,7 +93,7 @@ class TrendService
                 $newsTitle = '';
                 $newsSnippet = '';
 
-                $ht = $item->children('https://trends.google.com/trends/trendingsearches/daily');
+                $ht = $item->children('https://trends.google.com/trending/rss');
                 if (isset($ht->news_item)) {
                     foreach ($ht->news_item as $news) {
                         $newsTitle = (string) ($news->news_item_title ?? '');

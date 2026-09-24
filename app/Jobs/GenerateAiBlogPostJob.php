@@ -62,10 +62,16 @@ class GenerateAiBlogPostJob implements ShouldQueue
             $title = trim((string) ($final['title'] ?? $topic->topic));
             $slug = $this->uniqueSlug($final['slug'] ?? $title);
 
-            $imagePath = (new UnsplashService($settings))->fetchImage(
+            $unsplash = new UnsplashService($settings);
+
+            $imagePath = $unsplash->fetchImage(
                 $final['image_search_query'] ?? $topic->topic,
                 $slug
             );
+
+            $inlineQueries = is_array($final['image_queries'] ?? null) ? $final['image_queries'] : [];
+            $inlineImageUrls = $unsplash->fetchContentImages($inlineQueries, $slug);
+            $content = $this->insertInlineImages((string) ($final['content_html'] ?? ''), $inlineImageUrls);
 
             $tags = $final['tags'] ?? [];
             if (!is_array($tags)) {
@@ -83,7 +89,7 @@ class GenerateAiBlogPostJob implements ShouldQueue
             $post->title = $title;
             $post->slug = $slug;
             $post->read_time = $final['read_time'] ?? null;
-            $post->content = $final['content_html'] ?? '';
+            $post->content = $content;
             $post->meta_title = Str::limit($final['meta_title'] ?? $title, 60, '');
             $post->meta_description = Str::limit($final['meta_description'] ?? '', 160, '');
             $post->meta_keywords = $final['meta_keywords'] ?? '';
@@ -118,6 +124,23 @@ class GenerateAiBlogPostJob implements ShouldQueue
                 'error_message' => Str::limit($e->getMessage(), 2000),
             ]);
         }
+    }
+
+    protected function insertInlineImages(string $content, array $imageUrls): string
+    {
+        $placeholders = ['{{IMAGE_1}}', '{{IMAGE_2}}', '{{IMAGE_3}}'];
+
+        foreach ($placeholders as $index => $placeholder) {
+            $url = $imageUrls[$index] ?? null;
+
+            $replacement = $url
+                ? '<figure class="ai-blog-inline-image"><img src="' . e($url) . '" alt="" loading="lazy"></figure>'
+                : '';
+
+            $content = str_replace($placeholder, $replacement, $content);
+        }
+
+        return $content;
     }
 
     protected function uniqueSlug(string $source): string
