@@ -268,6 +268,7 @@
                             <th>{{ __('Status') }}</th>
                             <th>{{ __('Post') }}</th>
                             <th>{{ __('Fetched At') }}</th>
+                            <th>{{ __('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -279,7 +280,7 @@
                                     @php
                                         $badge = ['pending' => 'secondary', 'generating' => 'info', 'completed' => 'success', 'failed' => 'danger'][$topic->status] ?? 'secondary';
                                     @endphp
-                                    <span class="badge bg-label-{{ $badge }}">{{ ucfirst($topic->status) }}</span>
+                                    <span class="badge bg-label-{{ $badge }}" title="{{ $topic->status === 'failed' ? $topic->error_message : '' }}">{{ ucfirst($topic->status) }}</span>
                                 </td>
                                 <td>
                                     @if ($topic->post)
@@ -289,6 +290,20 @@
                                     @endif
                                 </td>
                                 <td>{{ $topic->fetched_at ? $topic->fetched_at->format('d M Y H:i') : '-' }}</td>
+                                <td>
+                                    @if ($topic->status === 'failed')
+                                        @canany(['create setting', 'update setting'])
+                                            <form action="{{ route('dashboard.setting.ai_blog.regenerate', $topic->id) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Regenerate this post now?') }}');">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-icon btn-label-primary" title="{{ __('Regenerate') }}">
+                                                    <i class="ti ti-refresh"></i> {{ __('Regenerate') }}
+                                                </button>
+                                            </form>
+                                        @endcanany
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>

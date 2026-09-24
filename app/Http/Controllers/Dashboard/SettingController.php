@@ -406,6 +406,41 @@ class SettingController extends Controller
         }
     }
 
+    public function regenerateAiBlogTopic(Request $request, $id)
+    {
+        if (!Gate::any(['update setting', 'create setting'])) {
+            abort(403, 'Unauthorized');
+        }
+
+        try {
+            $settings = AiBlogSetting::first();
+            if (!$settings || !$settings->is_enabled) {
+                return redirect()->back()->with('error', 'Enable AI Blog Automation and save your settings first.');
+            }
+
+            $topic = AiBlogTopic::find($id);
+            if (!$topic) {
+                return redirect()->back()->with('error', 'Topic not found.');
+            }
+
+            if ($topic->status !== 'failed') {
+                return redirect()->back()->with('error', 'Only a failed topic can be regenerated.');
+            }
+
+            $topic->update([
+                'status' => 'pending',
+                'error_message' => null,
+            ]);
+
+            \App\Jobs\GenerateAiBlogPostJob::dispatch($topic->id);
+
+            return redirect()->back()->with('success', 'Regeneration started. Refresh in a moment to see the result.');
+        } catch (\Throwable $th) {
+            Log::error('AI Blog Topic Regenerate Failed', ['error' => $th->getMessage()]);
+            return redirect()->back()->with('error', "Something went wrong! Please try again later");
+        }
+    }
+
     public function sendTestMail(Request $request)
     {
         $this->authorize('view setting');

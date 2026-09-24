@@ -44,22 +44,29 @@ class GenerateAiBlogPostJob implements ShouldQueue
         $topic->update(['status' => 'generating']);
 
         try {
-            $categoryId = $settings->default_category_id
-                ?: Category::where('is_active', 'active')->value('id');
             $authorId = $settings->default_author_id
                 ?: Author::where('is_active', 'active')->value('id');
             $userId = $settings->posted_by_user_id;
 
-            if (!$categoryId || !$authorId || !$userId) {
+            $activeCategories = Category::where('is_active', 'active')->get(['id', 'name']);
+
+            if ($activeCategories->isEmpty() || !$authorId || !$userId) {
                 throw new \RuntimeException('AI Blog Automation is missing a default category, author, or "post as" user. Please complete the settings.');
             }
 
             $claude = new ClaudeService($settings);
 
-            $draft = $claude->generateArticle($topic->topic, (string) $topic->context, (string) $topic->country);
+            $draft = $claude->generateArticle(
+                $topic->topic,
+                (string) $topic->context,
+                (string) $topic->country,
+                $activeCategories->pluck('name')->all()
+            );
             $final = $claude->humanizeAndQa($draft);
 
-            $title = trim((string) ($final['title'] ?? $topic->topic));
+            $categoryId = $this->resolveCategoryId($final['category'] ?? null, $activeCategories, $settings->default_category_id);
+
+            $title = $this->cleanText(trim((string) ($final['title'] ?? $topic->topic)));
             $slug = $this->uniqueSlug($final['slug'] ?? $title);
 
             $unsplash = new UnsplashService($settings);
@@ -71,7 +78,7 @@ class GenerateAiBlogPostJob implements ShouldQueue
 
             $inlineQueries = is_array($final['image_queries'] ?? null) ? $final['image_queries'] : [];
             $inlineImageUrls = $unsplash->fetchContentImages($inlineQueries, $slug);
-            $content = $this->insertInlineImages((string) ($final['content_html'] ?? ''), $inlineImageUrls);
+            $content = $this->insertInlineImages($this->cleanText((string) ($final['content_html'] ?? '')), $inlineImageUrls);
 
             $tags = $final['tags'] ?? [];
             if (!is_array($tags)) {
@@ -90,9 +97,9 @@ class GenerateAiBlogPostJob implements ShouldQueue
             $post->slug = $slug;
             $post->read_time = $final['read_time'] ?? null;
             $post->content = $content;
-            $post->meta_title = Str::limit($final['meta_title'] ?? $title, 60, '');
-            $post->meta_description = Str::limit($final['meta_description'] ?? '', 160, '');
-            $post->meta_keywords = $final['meta_keywords'] ?? '';
+            $post->meta_title = $this->cleanText(Str::limit($final['meta_title'] ?? $title, 60, ''));
+            $post->meta_description = $this->cleanText(Str::limit($final['meta_description'] ?? '', 160, ''));
+            $post->meta_keywords = $this->cleanText($final['meta_keywords'] ?? '');
             $post->tags = json_encode(array_values($tags));
 
             if ($imagePath) {
@@ -124,6 +131,55 @@ class GenerateAiBlogPostJob implements ShouldQueue
                 'error_message' => Str::limit($e->getMessage(), 2000),
             ]);
         }
+    }
+
+    /**
+     * Match the category name Claude picked against the site's real, active
+     * categories (case-insensitive, with a bit of tolerance for wording),
+     * so posts land in the category that actually matches the news topic
+     * instead of always falling back to one fixed default category.
+     */
+    protected function resolveCategoryId(?string $categoryName, $activeCategories, ?int $fallbackCategoryId): int
+    {
+        $categoryName = trim((string) $categoryName);
+
+        if ($categoryName !== '') {
+            $needle = Str::lower($categoryName);
+
+            // Exact match first.
+            $match = $activeCategories->first(fn ($category) => Str::lower($category->name) === $needle);
+
+            // Otherwise a loose contains-match either direction (e.g. "US" vs "US News").
+            if (!$match) {
+                $match = $activeCategories->first(function ($category) use ($needle) {
+                    $catName = Str::lower($category->name);
+                    return str_contains($catName, $needle) || str_contains($needle, $catName);
+                });
+            }
+
+            if ($match) {
+                return $match->id;
+            }
+        }
+
+        return $fallbackCategoryId ?: $activeCategories->first()->id;
+    }
+
+    /**
+     * Strip em dashes and en dashes so generated text doesn't carry the
+     * tell-tale "AI look". Replaced with a plain space so words don't run
+     * together.
+     */
+    protected function cleanText(?string $text): string
+    {
+        if ($text === null || $text === '') {
+            return (string) $text;
+        }
+
+        $text = str_replace(['—', '–'], ' ', $text);
+
+        // Collapse any double spaces the replacement above may have created.
+        return preg_replace('/ {2,}/', ' ', $text);
     }
 
     protected function insertInlineImages(string $content, array $imageUrls): string

@@ -162,6 +162,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('send-mail/setting', [SettingController::class, 'sendTestMail'])->name('setting.send_test_mail');
             Route::put('ai-blog/setting/{id}', [SettingController::class, 'updateAiBlogSettings'])->name('setting.ai_blog.update');
             Route::post('ai-blog/setting/run-now', [SettingController::class, 'runAiBlogNow'])->name('setting.ai_blog.run_now');
+            Route::post('ai-blog/topic/{id}/regenerate', [SettingController::class, 'regenerateAiBlogTopic'])->name('setting.ai_blog.regenerate');
 
             // User Dashboard Authentication Routes
 

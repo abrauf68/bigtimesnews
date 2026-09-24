@@ -19,15 +19,18 @@ class ClaudeService
     /**
      * Step 1 (Claude Sonnet): research-grounded, SEO-optimized first draft.
      */
-    public function generateArticle(string $topic, string $context, string $country): array
+    public function generateArticle(string $topic, string $context, string $country, array $categories = []): array
     {
         $countryLabel = $country === 'GLOBAL' || empty($country) ? 'a global, international audience' : "readers in {$country}";
 
         $system = <<<SYS
 You are a senior digital journalist and SEO content strategist writing for a news & lifestyle blog.
-You write clean, well-researched, engaging articles that read like they were written by an experienced human writer — never like generic AI filler.
+You write clean, well-researched, engaging articles that read like they were written by an experienced human writer, not generic AI filler.
+Never use the em dash or en dash character in your writing (in the title, content, or anywhere else) - use a comma, a period, or a plain hyphen surrounded by spaces instead.
 Always respond with ONLY a single valid JSON object. No markdown code fences, no commentary before or after.
 SYS;
+
+        $categoryList = !empty($categories) ? implode(', ', $categories) : 'US News, World News, Business, Sports, Entertainment, Technology, Health, Lifestyle';
 
         $user = <<<PROMPT
 Write a full, original, SEO-optimized blog post about this currently trending topic: "{$topic}"
@@ -35,6 +38,8 @@ Write a full, original, SEO-optimized blog post about this currently trending to
 Related context you can use for grounding (may be partial, verify tone rather than copying facts verbatim): "{$context}"
 
 Target audience: {$countryLabel}.
+
+Available categories on this site (choose the single one that best fits this topic's actual subject matter, do not default to a generic one): {$categoryList}
 
 Requirements:
 - 1200 to 1500 words of substantive, well-organized content in content_html (count the visible text, not the HTML tags).
@@ -47,11 +52,13 @@ Requirements:
 - Include exactly one HTML <table> (with <thead>, <tbody>, <tr>, <th>, <td>) giving a genuinely useful at-a-glance breakdown, comparison, or set of facts related to the topic. If the topic has no obvious tabular data, build a sensible "Quick Facts" or "Key Takeaways" table instead — never skip the table.
 - Insert exactly 3 image placeholders as their own line, in plain text (not wrapped in any HTML tag), at natural reading breaks: {{IMAGE_1}} shortly after the introduction, {{IMAGE_2}} roughly in the middle of the article, {{IMAGE_3}} before the closing section.
 - Output valid semantic HTML for the body (using <h2>, <h3>, <p>, <ul>/<ol>/<li>, <table>/<thead>/<tbody>/<tr>/<th>/<td>, <strong> etc. only — no <html>/<body> wrapper, no inline styles, no <h1>).
+- Do not use the em dash (—) or en dash (–) anywhere in the title, meta fields, or content. Use a comma, a period, or a plain hyphen with spaces around it instead.
 
 Return ONLY this JSON object:
 {
   "title": "string, the article's H1 title, under 70 characters",
   "slug": "string, url-safe kebab-case slug derived from the title",
+  "category": "string, the single best-fitting category name copied exactly from the available categories list above, based on what this article is actually about",
   "meta_title": "string, <= 60 characters, SEO title tag",
   "meta_description": "string, <= 155 characters, compelling SEO meta description",
   "meta_keywords": "string, 5-8 comma separated keywords/phrases",
@@ -81,11 +88,13 @@ Also verify and, if needed, fix basic on-page SEO: meta_title <= 60 characters, 
 heading structure present, keyword present naturally in the first paragraph, content_html still roughly 1200-1500 words.
 Keep the article's <table>, its <ul>/<ol> lists, and the three {{IMAGE_1}}, {{IMAGE_2}}, {{IMAGE_3}} placeholders exactly
 as they are and in the same relative positions — never remove, rename, merge, or wrap them, even while polishing the
-surrounding prose.
+surrounding prose. Keep the "category" field exactly as given, do not change it.
+Remove any em dash (—) or en dash (–) you find anywhere in the text (title, meta fields, content) and replace it with a
+comma, a period, or a plain hyphen with spaces around it, whichever reads most naturally in context.
 Always respond with ONLY a single valid JSON object, same shape as given to you, no markdown fences, no commentary.
 SYS;
 
-        $user = "Here is the drafted post as JSON. Polish it and return the corrected, humanized, SEO-checked version in the exact same JSON shape (keys: title, slug, meta_title, meta_description, meta_keywords, tags, read_time, content_html, image_search_query, image_queries):\n\n"
+        $user = "Here is the drafted post as JSON. Polish it and return the corrected, humanized, SEO-checked version in the exact same JSON shape (keys: title, slug, category, meta_title, meta_description, meta_keywords, tags, read_time, content_html, image_search_query, image_queries):\n\n"
             . json_encode($draft, JSON_UNESCAPED_SLASHES);
 
         $result = $this->call($this->settings->claude_qa_model, $system, $user, 6000);
