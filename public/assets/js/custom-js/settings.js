@@ -8,6 +8,7 @@ $(document).ready(function() {
             'recaptcha': '#recaptcha-setting',
             'system': '#system-settings',
             'email': '#email-settings',
+            'ai_blog': '#ai-blog-settings',
         };
 
         var activeTabSelector = tabMapping[activeTab] || '#company-setting';

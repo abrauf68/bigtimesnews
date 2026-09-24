@@ -1,2 +1,7 @@
 User-agent: *
-Disallow:
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+
+Sitemap: https://bigtimesnews.com/sitemap.xml
+Sitemap: https://bigtimesnews.com/news-sitemap.xml

@@ -5,6 +5,54 @@
 @section('meta_description', $post->meta_description)
 @section('meta_keywords', $post->meta_keywords)
 @section('author', $post->author->name ?? '')
+@section('og_type', 'article')
+@if ($post->meta_image)
+    @section('og_image', asset($post->meta_image))
+@elseif ($post->main_image)
+    @section('og_image', asset($post->main_image))
+@endif
+
+@push('schema')
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "NewsArticle",
+            "headline": {!! json_encode($post->title) !!},
+            "description": {!! json_encode($post->meta_description) !!},
+            "image": [{!! json_encode($post->main_image ? asset($post->main_image) : url('assets/img/social-og.png')) !!}],
+            "datePublished": {!! json_encode(optional($post->published_at ?? $post->created_at)->toAtomString()) !!},
+            "dateModified": {!! json_encode(optional($post->updated_at)->toAtomString()) !!},
+            "author": {
+                "@@type": "Person",
+                "name": {!! json_encode($post->author->name ?? \App\Helpers\Helper::getCompanyName()) !!}
+            },
+            "publisher": {
+                "@@type": "Organization",
+                "name": {!! json_encode(\App\Helpers\Helper::getCompanyName()) !!},
+                "logo": {
+                    "@@type": "ImageObject",
+                    "url": {!! json_encode(\App\Helpers\Helper::getLogoLight()) !!}
+                }
+            },
+            "mainEntityOfPage": {
+                "@@type": "WebPage",
+                "@@id": {!! json_encode(request()->fullUrl()) !!}
+            }
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "BreadcrumbList",
+            "itemListElement": [
+                {"@@type": "ListItem", "position": 1, "name": "Home", "item": {!! json_encode(route('frontend.home')) !!}},
+                {"@@type": "ListItem", "position": 2, "name": "News", "item": {!! json_encode(route('frontend.news.index')) !!}},
+                {"@@type": "ListItem", "position": 3, "name": {!! json_encode($post->category->name ?? '') !!}, "item": {!! json_encode($post->category ? route('frontend.news.category', $post->category->slug) : route('frontend.news.index')) !!}},
+                {"@@type": "ListItem", "position": 4, "name": {!! json_encode($post->title) !!}}
+            ]
+        }
+    </script>
+@endpush
 
 @section('css')
 <style>

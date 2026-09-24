@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Mail\TestMail;
+use App\Models\AiBlogSetting;
+use App\Models\AiBlogTopic;
+use App\Models\Author;
+use App\Models\Category;
 use App\Models\CompanySetting;
 use App\Models\Country;
 use App\Models\Designation;
@@ -16,8 +20,10 @@ use App\Models\Profile;
 use App\Models\RecaptchaSetting;
 use App\Models\SystemSetting;
 use App\Models\Timezone;
+use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
@@ -43,7 +49,17 @@ class SettingController extends Controller
             $recaptchaSetting = RecaptchaSetting::first();
             $systemSetting = SystemSetting::first();
             $emailSetting = EmailSetting::first();
-            return view('dashboard.settings.index',compact('countries','companySetting','recaptchaSetting','systemSetting','languages','timezones','emailSetting'));
+
+            $aiBlogSetting = AiBlogSetting::firstOrCreate([], ['is_enabled' => false]);
+            $aiCategories = Category::where('is_active', 'active')->get();
+            $aiAuthors = Author::where('is_active', 'active')->get();
+            $aiUsers = User::orderBy('name')->get();
+            $aiRecentTopics = AiBlogTopic::with('post')->latest()->limit(15)->get();
+
+            return view('dashboard.settings.index', compact(
+                'countries', 'companySetting', 'recaptchaSetting', 'systemSetting', 'languages', 'timezones', 'emailSetting',
+                'aiBlogSetting', 'aiCategories', 'aiAuthors', 'aiUsers', 'aiRecentTopics'
+            ));
         } catch (\Throwable $th) {
             Log::error('Settings index Failed', ['error' => $th->getMessage()]);
             return redirect()->back()->with('error', "Something went wrong! Please try again later");
@@ -301,6 +317,91 @@ class SettingController extends Controller
         } catch (\Throwable $th) {
             // throw $th;
             Log::error('Email Settings Update Failed', ['error' => $th->getMessage()]);
+            return redirect()->back()->with('error', "Something went wrong! Please try again later");
+        }
+    }
+
+    public function updateAiBlogSettings(Request $request, $id)
+    {
+        if (!Gate::any(['update setting', 'create setting'])) {
+            abort(403, 'Unauthorized');
+        }
+
+        $rules = [
+            'is_enabled' => 'required|in:0,1',
+            'daily_post_limit' => 'required|integer|min:1|max:20',
+            'auto_publish' => 'required|in:0,1',
+            'run_time' => 'required|date_format:H:i',
+            'trends_provider' => 'required|in:google_trends,serpapi',
+            'trend_country' => 'nullable|string|max:10',
+            'trends_api_key' => 'nullable|string|max:255',
+            'claude_api_key' => 'nullable|string|max:500',
+            'claude_writer_model' => 'required|string|max:100',
+            'claude_qa_model' => 'required|string|max:100',
+            'unsplash_access_key' => 'nullable|string|max:255',
+            'default_category_id' => 'nullable|exists:categories,id',
+            'default_author_id' => 'nullable|exists:authors,id',
+            'posted_by_user_id' => 'required|exists:users,id',
+            'notify_admin' => 'required|in:0,1',
+            'admin_email' => 'nullable|email|max:255',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput($request->all())->with('error', 'Validation Error!');
+        }
+
+        try {
+            $aiBlogSetting = AiBlogSetting::find($id);
+            if (!$aiBlogSetting) {
+                $aiBlogSetting = new AiBlogSetting();
+            }
+
+            $aiBlogSetting->fill([
+                'is_enabled' => $request->is_enabled,
+                'daily_post_limit' => $request->daily_post_limit,
+                'auto_publish' => $request->auto_publish,
+                'run_time' => $request->run_time . ':00',
+                'trends_provider' => $request->trends_provider,
+                'trend_country' => $request->trend_country ?: null,
+                'trends_api_key' => $request->trends_api_key,
+                'claude_api_key' => $request->claude_api_key,
+                'claude_writer_model' => $request->claude_writer_model,
+                'claude_qa_model' => $request->claude_qa_model,
+                'unsplash_access_key' => $request->unsplash_access_key,
+                'default_category_id' => $request->default_category_id,
+                'default_author_id' => $request->default_author_id,
+                'posted_by_user_id' => $request->posted_by_user_id,
+                'notify_admin' => $request->notify_admin,
+                'admin_email' => $request->admin_email,
+            ]);
+            $aiBlogSetting->save();
+
+            return redirect()->back()->with('success', 'AI Blog Automation Settings Updated Successfully');
+        } catch (\Throwable $th) {
+            Log::error('AI Blog Settings Update Failed', ['error' => $th->getMessage()]);
+            return redirect()->back()->with('error', "Something went wrong! Please try again later");
+        }
+    }
+
+    public function runAiBlogNow(Request $request)
+    {
+        if (!Gate::any(['update setting', 'create setting'])) {
+            abort(403, 'Unauthorized');
+        }
+
+        try {
+            $settings = AiBlogSetting::first();
+            if (!$settings || !$settings->is_enabled) {
+                return redirect()->back()->with('error', 'Enable AI Blog Automation and save your settings first.');
+            }
+
+            Artisan::call('ai-blog:run', ['--force' => true]);
+
+            return redirect()->back()->with('success', 'Automation triggered. New posts will appear here within a few minutes as the queue processes them.');
+        } catch (\Throwable $th) {
+            Log::error('AI Blog Manual Run Failed', ['error' => $th->getMessage()]);
             return redirect()->back()->with('error', "Something went wrong! Please try again later");
         }
     }

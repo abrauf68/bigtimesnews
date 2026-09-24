@@ -160,6 +160,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('system/setting/{id}', [SettingController::class, 'updateSystemSettings'])->name('setting.system.update');
             Route::put('email/setting/{id}', [SettingController::class, 'updateEmailSettings'])->name('setting.email.update');
             Route::post('send-mail/setting', [SettingController::class, 'sendTestMail'])->name('setting.send_test_mail');
+            Route::put('ai-blog/setting/{id}', [SettingController::class, 'updateAiBlogSettings'])->name('setting.ai_blog.update');
+            Route::post('ai-blog/setting/run-now', [SettingController::class, 'runAiBlogNow'])->name('setting.ai_blog.run_now');
 
             // User Dashboard Authentication Routes
 
@@ -217,6 +219,10 @@ Route::get('/news/{category}', [FrontendHomeController::class, 'postDetail'])->n
 Route::get('/news/{category}/{post}', [FrontendHomeController::class, 'postDetail'])->name('news.show');
     Route::post('/newsletter/store', [FrontendHomeController::class, 'newsletterStore'])->name('newsletter.store');
 });
+
+// SEO sitemaps
+Route::get('/sitemap.xml', [\App\Http\Controllers\Frontend\SitemapController::class, 'index'])->name('sitemap.index');
+Route::get('/news-sitemap.xml', [\App\Http\Controllers\Frontend\SitemapController::class, 'news'])->name('sitemap.news');
 
 
 //Artisan Routes

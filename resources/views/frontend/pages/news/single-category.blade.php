@@ -6,6 +6,20 @@
 @section('meta_keywords', $category->meta_keywords)
 @section('author', $category->author)
 
+@push('schema')
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "BreadcrumbList",
+            "itemListElement": [
+                {"@@type": "ListItem", "position": 1, "name": "Home", "item": {!! json_encode(route('frontend.home')) !!}},
+                {"@@type": "ListItem", "position": 2, "name": "News", "item": {!! json_encode(route('frontend.news.index')) !!}},
+                {"@@type": "ListItem", "position": 3, "name": {!! json_encode($category->name) !!}}
+            ]
+        }
+    </script>
+@endpush
+
 @section('css')
 <style>
 @keyframes pulse {

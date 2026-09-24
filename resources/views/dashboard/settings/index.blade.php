@@ -53,6 +53,12 @@
                             {{ __('Email Settings') }}
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link profile-tab" href="#" data-target="#ai-blog-settings" data-query="ai_blog">
+                            <i class="ti-sm ti ti-robot me-1_5"></i>
+                            {{ __('AI Blog Automation') }}
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -83,6 +89,9 @@
             </div>
             <div id="email-settings" style="display: none;">
                 @include('dashboard.settings.sections.email-setting')
+            </div>
+            <div id="ai-blog-settings" style="display: none;">
+                @include('dashboard.settings.sections.ai-blog-setting')
             </div>
         </div>
     </div>

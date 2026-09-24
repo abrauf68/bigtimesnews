@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\AiBlogSetting;
 use App\Models\CompanySetting;
 use App\Models\EmailSetting;
 use App\Models\OtherSetting;
@@ -42,6 +43,18 @@ class SettingSeeder extends Seeder
             'mail_from_address' => 'admin@example.com',
             'mail_from_name' => 'Admin',
             'is_enabled' => '1',
+        ]);
+
+        AiBlogSetting::create([
+            'is_enabled' => false,
+            'daily_post_limit' => 3,
+            'auto_publish' => false,
+            'run_time' => '03:00:00',
+            'trends_provider' => 'google_trends',
+            'trend_country' => 'US',
+            'claude_writer_model' => 'claude-sonnet-5',
+            'claude_qa_model' => 'claude-haiku-4-5-20251001',
+            'notify_admin' => true,
         ]);
     }
 }

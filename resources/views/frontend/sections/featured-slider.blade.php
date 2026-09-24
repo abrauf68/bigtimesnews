@@ -21,19 +21,34 @@
                                                             <div
                                                                 class="featured-image bg-gray-25 dark:bg-gray-800 h-100 d-none md:d-block">
                                                                 <canvas class="h-100 w-100"></canvas>
-                                                                <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                                                                    src="{{ asset('assets/img/blog/blog-default.png') }}"
-                                                                    data-src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
-                                                                    alt="{{ $post->title }}"
-                                                                    data-uc-img="loading: lazy">
+                                                                @if ($loop->first)
+                                                                    {{-- First slide is visible immediately (it's the page's LCP element) - load it eagerly, not via JS lazy-load --}}
+                                                                    <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
+                                                                        src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
+                                                                        alt="{{ $post->title }}"
+                                                                        fetchpriority="high">
+                                                                @else
+                                                                    <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
+                                                                        src="{{ asset('assets/img/blog/blog-default.png') }}"
+                                                                        data-src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
+                                                                        alt="{{ $post->title }}"
+                                                                        data-uc-img="loading: lazy">
+                                                                @endif
                                                             </div>
                                                             <div
                                                                 class="featured-image bg-gray-25 dark:bg-gray-800 ratio ratio-16x9 d-block md:d-none">
-                                                                <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                                                                    src="{{ asset('assets/img/blog/blog-default.png') }}"
-                                                                    data-src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
-                                                                    alt="{{ $post->title }}"
-                                                                    data-uc-img="loading: lazy">
+                                                                @if ($loop->first)
+                                                                    <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
+                                                                        src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
+                                                                        alt="{{ $post->title }}"
+                                                                        fetchpriority="high">
+                                                                @else
+                                                                    <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
+                                                                        src="{{ asset('assets/img/blog/blog-default.png') }}"
+                                                                        data-src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
+                                                                        alt="{{ $post->title }}"
+                                                                        data-uc-img="loading: lazy">
+                                                                @endif
                                                             </div>
                                                         </div>
                                                         <div

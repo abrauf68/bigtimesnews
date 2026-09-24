@@ -1,9 +1,31 @@
 <!DOCTYPE html>
-<html lang="zxx" dir="ltr">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="ltr">
 
 <head>
     <title>@yield('title') - {{ \App\Helpers\Helper::getCompanyName() }}</title>
     @include('frontend.layouts.meta')
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "Organization",
+            "name": {!! json_encode(\App\Helpers\Helper::getCompanyName()) !!},
+            "url": {!! json_encode(url('/')) !!},
+            "logo": {!! json_encode(\App\Helpers\Helper::getLogoLight()) !!}
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "WebSite",
+            "name": {!! json_encode(\App\Helpers\Helper::getCompanyName()) !!},
+            "url": {!! json_encode(url('/')) !!},
+            "potentialAction": {
+                "@@type": "SearchAction",
+                "target": {!! json_encode(route('frontend.news.index') . '?search={search_term_string}') !!},
+                "query-input": "required name=search_term_string"
+            }
+        }
+    </script>
     @include('frontend.layouts.css')
     @yield('css')
     <style>
