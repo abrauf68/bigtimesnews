@@ -62,6 +62,8 @@ Route::get('/api/post/{id}/related', [AjaxController::class, 'getRelatedPosts'])
 Route::get('/api/post/{id}/comments', [AjaxController::class, 'getPostComments']);
 Route::post('/api/post/{id}/comment', [AjaxController::class, 'submitComment']);
 Route::get('/api/post/{id}/comments/more', [AjaxController::class, 'loadMoreComments']);
+Route::post('/api/post/{id}/like', [AjaxController::class, 'toggleLike']);
+Route::get('/api/post/{id}/like-status', [AjaxController::class, 'getLikeStatus']);
 
 Route::get('/lang/{lang}', function ($lang) {
     // dd($lang);

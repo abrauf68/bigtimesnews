@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Comment;
 use App\Models\Post;
+use App\Models\PostLike;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -485,7 +486,8 @@ class AjaxController extends Controller
             $post = Post::findOrFail($postId);
 
             $comments = $post->comments()
-                ->with('user')
+                ->whereNull('parent_id')
+                ->with(['user', 'replies.user', 'replies.replies.user'])
                 ->where('status', 'approved')
                 ->latest()
                 ->paginate(10);
@@ -516,7 +518,8 @@ class AjaxController extends Controller
             $page = $request->get('page', 1);
 
             $comments = Comment::where('post_id', $postId)
-                ->with('user')
+                ->whereNull('parent_id')
+                ->with(['user', 'replies.user', 'replies.replies.user'])
                 ->where('status', 'approved')
                 ->latest()
                 ->paginate(10, ['*'], 'page', $page);
@@ -543,13 +546,15 @@ class AjaxController extends Controller
             $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|max:255',
-                'comment' => 'required|string|min:3'
+                'comment' => 'required|string|min:3',
+                'parent_id' => 'nullable|integer|exists:comments,id'
             ]);
 
             $comment = Comment::create([
                 'post_id' => $postId,
-                'user_name' => $request->name,
-                'user_email' => $request->email,
+                'parent_id' => $request->parent_id,
+                'guest_name' => $request->name,
+                'guest_email' => $request->email,
                 'content' => $request->comment,
                 'status' => 'pending',
                 'ip_address' => $request->ip(),
@@ -567,5 +572,59 @@ class AjaxController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function toggleLike(Request $request, $postId)
+    {
+        try {
+            $post = Post::findOrFail($postId);
+
+            $userId = auth()->id();
+            $sessionId = $userId ? null : $request->session()->getId();
+
+            $existing = PostLike::where('post_id', $post->id)
+                ->when($userId, fn($q) => $q->where('user_id', $userId))
+                ->when(!$userId, fn($q) => $q->whereNull('user_id')->where('session_id', $sessionId))
+                ->first();
+
+            if ($existing) {
+                $existing->delete();
+                $liked = false;
+            } else {
+                PostLike::create([
+                    'post_id' => $post->id,
+                    'user_id' => $userId,
+                    'session_id' => $sessionId,
+                    'ip_address' => $request->ip()
+                ]);
+                $liked = true;
+            }
+
+            return response()->json([
+                'success' => true,
+                'liked' => $liked,
+                'likes_count' => $post->likes()->count()
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Toggle Like Failed', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Something went wrong!'], 500);
+        }
+    }
+
+    public function getLikeStatus(Request $request, $postId)
+    {
+        $userId = auth()->id();
+        $sessionId = $userId ? null : $request->session()->getId();
+
+        $liked = PostLike::where('post_id', $postId)
+            ->when($userId, fn($q) => $q->where('user_id', $userId))
+            ->when(!$userId, fn($q) => $q->whereNull('user_id')->where('session_id', $sessionId))
+            ->exists();
+
+        return response()->json([
+            'success' => true,
+            'liked' => $liked,
+            'likes_count' => PostLike::where('post_id', $postId)->count()
+        ]);
     }
 }

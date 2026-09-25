@@ -16,6 +16,8 @@ class Comment extends Model
     protected $fillable = [
         'post_id',
         'user_id',
+        'guest_name',
+        'guest_email',
         'content',
         'parent_id',
         'status',
@@ -116,19 +118,23 @@ class Comment extends Model
      */
     public function getAuthorNameAttribute(): string
     {
-        if ($this->user && $this->user_id) {
+        if ($this->user_id && $this->user) {
             return $this->user->name;
         }
 
-        return 'Guest';
+        return $this->guest_name ?: 'Guest';
     }
 
     /**
-     * Get comment author email (if logged in)
+     * Get comment author email (logged-in user's email, or the guest's submitted email)
      */
     public function getAuthorEmailAttribute(): ?string
     {
-        return $this->user?->email;
+        if ($this->user_id && $this->user) {
+            return $this->user->email;
+        }
+
+        return $this->guest_email;
     }
 
     /**
@@ -140,8 +146,9 @@ class Comment extends Model
             return asset('storage/' . $this->user->avatar);
         }
 
-        // Default avatar
-        return asset('assets/images/default-avatar.png');
+        $email = $this->author_email ?: 'guest';
+
+        return 'https://www.gravatar.com/avatar/' . md5(strtolower(trim($email))) . '?s=80&d=mp';
     }
 
     /**

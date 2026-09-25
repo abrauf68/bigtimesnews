@@ -111,6 +111,94 @@
         padding: 8px 10px;
     }
 }
+
+/* Comment section */
+.comments-list {
+    background: #fff;
+    border: 1px solid #eceef1;
+    border-radius: 10px;
+    padding: 20px 20px 4px;
+}
+.comment-card {
+    display: flex;
+    gap: 14px;
+    padding: 16px 0;
+    border-bottom: 1px solid #eceef1;
+}
+.comment-card-replies > .comment-card:last-child {
+    border-bottom: none;
+}
+.comments-list > .comment-card:last-child {
+    border-bottom: none;
+}
+.comment-card-avatar {
+    flex: 0 0 auto;
+}
+.comment-card-avatar img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+.comment-card-body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.comment-card-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.comment-card-name {
+    font-weight: 700;
+    color: #16181b !important;
+    font-size: 0.95rem;
+}
+.comment-card-time {
+    color: #8a8f98;
+    font-size: 0.8rem;
+}
+.comment-card-text {
+    margin-top: 4px;
+    color: #3c4149 !important;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    word-break: break-word;
+}
+.comment-card-actions {
+    margin-top: 8px;
+    display: flex;
+    gap: 14px;
+}
+.comment-card-reply {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280 !important;
+    text-decoration: none;
+}
+.comment-card-reply:hover {
+    color: #2563eb !important;
+    text-decoration: underline;
+}
+.comment-card-replies {
+    margin-top: 8px;
+    padding-left: 20px;
+    border-left: 2px solid #eceef1;
+}
+
+/* Like button */
+.like-button .like-icon {
+    transition: color 0.15s ease, transform 0.15s ease;
+}
+.like-button.liked .like-icon {
+    color: #e0245e !important;
+    transform: scale(1.1);
+}
+.like-button.liked .likes-count {
+    color: #e0245e !important;
+}
 </style>
 @endsection
 
@@ -227,9 +315,14 @@
 
                 <div id="comment-form-wrapper" class="panel pt-2 mt-8 xl:mt-9">
                     <h4 class="h5 xl:h4 mb-5 xl:mb-6">Leave a Comment</h4>
+                    <div id="reply-indicator" class="alert alert-light border d-none align-items-center justify-content-between mb-3 py-2 px-3">
+                        <span>Replying to <strong id="reply-indicator-name"></strong></span>
+                        <a href="#" id="cancel-reply" class="fs-7">Cancel</a>
+                    </div>
                     <div class="comment_form_holder">
                         <form id="comment-form" class="vstack gap-2">
                             @csrf
+                            <input type="hidden" name="parent_id" id="comment-parent-id" value="">
                             <input class="form-control form-control-sm h-40px w-full fs-6 bg-white dark:bg-opacity-0 dark:text-white dark:border-gray-300 dark:border-opacity-30" type="text" name="name" placeholder="Your name" required>
                             <input class="form-control form-control-sm h-40px w-full fs-6 bg-white dark:bg-opacity-0 dark:text-white dark:border-gray-300 dark:border-opacity-30" type="email" name="email" placeholder="Your email" required>
                             <textarea class="form-control h-250px w-full fs-6 bg-white dark:bg-opacity-0 dark:text-white dark:border-gray-300 dark:border-opacity-30" name="comment" placeholder="Your comment" required></textarea>
@@ -254,7 +347,54 @@ document.addEventListener('DOMContentLoaded', function() {
     loadRelatedPosts();
     loadComments();
     setupCommentForm();
+    setupLikeButton();
 });
+
+function setupLikeButton() {
+    const btn = document.querySelector(`.like-button[data-post-id="${postId}"]`);
+    if (!btn) return;
+
+    fetch(`/api/post/${postId}/like-status`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                updateLikeButtonState(btn, data.liked, data.likes_count);
+            }
+        })
+        .catch(() => {});
+
+    btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            const response = await fetch(`/api/post/${postId}/like`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                updateLikeButtonState(btn, data.liked, data.likes_count);
+            }
+        } catch (error) {
+            console.error('Error toggling like:', error);
+        } finally {
+            btn.disabled = false;
+        }
+    });
+}
+
+function updateLikeButtonState(btn, liked, count) {
+    const icon = btn.querySelector('.like-icon');
+    const countEl = btn.querySelector('.likes-count');
+
+    if (icon) icon.classList.toggle('liked', liked);
+    if (countEl) countEl.textContent = count;
+    btn.classList.toggle('liked', liked);
+}
 
 // Load Prev/Next Posts
 async function loadPostNavigation() {
@@ -317,13 +457,26 @@ async function loadComments(page = 1) {
             if (page === 1) {
                 document.getElementById('comments-container').innerHTML = data.html;
             } else {
-                document.getElementById('comments-container').insertAdjacentHTML('beforeend', data.html);
+                const list = document.querySelector('#comments-container .comments-list');
+                if (list) {
+                    list.insertAdjacentHTML('beforeend', data.html);
+                } else {
+                    document.getElementById('comments-container').insertAdjacentHTML('beforeend', data.html);
+                }
             }
             hasMoreComments = data.has_more;
             currentCommentPage = data.next_page;
 
-            // Setup load more button
-            if (hasMoreComments) {
+            const loadMoreBtn = document.querySelector('.load-more-comments');
+            if (loadMoreBtn) {
+                if (hasMoreComments) {
+                    loadMoreBtn.dataset.page = currentCommentPage;
+                } else {
+                    loadMoreBtn.remove();
+                }
+            }
+
+            if (page === 1 && hasMoreComments) {
                 setupLoadMoreButton();
             }
         }
@@ -338,7 +491,6 @@ function setupLoadMoreButton() {
         loadMoreBtn.addEventListener('click', () => {
             if (hasMoreComments) {
                 loadComments(currentCommentPage);
-                loadMoreBtn.remove();
             }
         });
     }
@@ -364,6 +516,7 @@ function setupCommentForm() {
         const name = form.querySelector('input[name="name"]')?.value;
         const email = form.querySelector('input[name="email"]')?.value;
         const comment = form.querySelector('textarea[name="comment"]')?.value;
+        const parentId = form.querySelector('#comment-parent-id')?.value || null;
 
         // Validate
         if (!name || !email || !comment) {
@@ -388,7 +541,8 @@ function setupCommentForm() {
                 body: JSON.stringify({
                     name: name,
                     email: email,
-                    comment: comment
+                    comment: comment,
+                    parent_id: parentId
                 })
             });
 
@@ -403,6 +557,7 @@ function setupCommentForm() {
 
                 // Reset form
                 form.reset();
+                cancelReply();
 
                 // Remove success message after 5 seconds
                 setTimeout(() => successMsg.remove(), 5000);
@@ -428,11 +583,37 @@ function setupCommentForm() {
 
 // Reply to comment function
 function replyToComment(commentId, userName) {
+    const parentIdField = document.getElementById('comment-parent-id');
+    const indicator = document.getElementById('reply-indicator');
+    const indicatorName = document.getElementById('reply-indicator-name');
     const commentField = document.querySelector('#comment-form textarea[name="comment"]');
+
+    if (parentIdField) parentIdField.value = commentId;
+    if (indicatorName) indicatorName.textContent = userName;
+    if (indicator) indicator.classList.remove('d-none');
+    if (indicator) indicator.classList.add('d-flex');
+
+    document.getElementById('comment-form-wrapper')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
     if (commentField) {
-        commentField.value = `@${userName} `;
         commentField.focus();
     }
 }
+
+function cancelReply() {
+    const parentIdField = document.getElementById('comment-parent-id');
+    const indicator = document.getElementById('reply-indicator');
+
+    if (parentIdField) parentIdField.value = '';
+    if (indicator) {
+        indicator.classList.add('d-none');
+        indicator.classList.remove('d-flex');
+    }
+}
+
+document.getElementById('cancel-reply')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    cancelReply();
+});
 </script>
 @endsection
