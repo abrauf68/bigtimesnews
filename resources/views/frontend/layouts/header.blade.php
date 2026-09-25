@@ -499,7 +499,7 @@
                             <li class="navbar-dropdown-item" data-dropdown-type="latest">
                                 <a href="#">Latest <span data-uc-navbar-parent-icon></span></a>
                                 <div class="uc-navbar-dropdown ft-primary text-unset p-3 pb-4 rounded-0 hide-scrollbar"
-                                    data-uc-drop="offset: 0; boundary: !.navbar-container; stretch: x; animation: uc-animation-slide-top-small; duration: 150;">
+                                    data-uc-drop="mode: click; offset: 0; boundary: !.navbar-container; stretch: x; animation: uc-animation-slide-top-small; duration: 150;">
                                     <div class="dropdown-content">
                                         @include('frontend.components.dropdown-skeleton')
                                     </div>
@@ -513,7 +513,7 @@
                                     <a href="#">{{ $category->name }} <span
                                             data-uc-navbar-parent-icon></span></a>
                                     <div class="uc-navbar-dropdown ft-primary text-unset p-3 pb-4 rounded-0 hide-scrollbar"
-                                        data-uc-drop="offset: 0; boundary: !.navbar-container; stretch: x; animation: uc-animation-slide-top-small; duration: 150;">
+                                        data-uc-drop="mode: click; offset: 0; boundary: !.navbar-container; stretch: x; animation: uc-animation-slide-top-small; duration: 150;">
                                         <div class="dropdown-content">
                                             <div class="skeleton-wrapper">
                                                 <div class="row child-cols g-3">

@@ -21,24 +21,11 @@ class NavbarDropdownManager {
         }
 
         dropdownItems.forEach(item => {
-            let hoverTimeout;
-            let hideTimeout;
+            const trigger = item.querySelector(':scope > a');
+            if (!trigger) return;
 
-            item.addEventListener('mouseenter', () => {
-                clearTimeout(hideTimeout);
-                hoverTimeout = setTimeout(() => {
-                    this.loadDropdownContent(item);
-                }, 200);
-            });
-
-            item.addEventListener('mouseleave', () => {
-                clearTimeout(hoverTimeout);
-                hideTimeout = setTimeout(() => {
-                    const dropdown = item.querySelector('.uc-navbar-dropdown');
-                    if (dropdown && window.UIkit && dropdown._drop) {
-                        dropdown._drop.hide(false);
-                    }
-                }, 300);
+            trigger.addEventListener('click', () => {
+                this.loadDropdownContent(item);
             });
         });
     }

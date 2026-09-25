@@ -45,7 +45,7 @@ class GenerateAiBlogPostJob implements ShouldQueue
 
         try {
             $authorId = $settings->default_author_id
-                ?: Author::where('is_active', 'active')->value('id');
+                ?: Author::where('is_active', 'active')->inRandomOrder()->value('id');
             $userId = $settings->posted_by_user_id;
 
             $activeCategories = Category::where('is_active', 'active')->get(['id', 'name']);
