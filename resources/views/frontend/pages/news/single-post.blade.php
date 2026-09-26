@@ -63,7 +63,7 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
 }
-.post-content h1, h2, h3, h4, h5, h6, p, li{
+.post-content h1, .post-content h2, .post-content h3, .post-content h4, .post-content h5, .post-content h6, .post-content p, .post-content li{
     color: #000 !important;
 }
 .footer-copyright p {
