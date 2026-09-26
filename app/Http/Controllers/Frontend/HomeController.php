@@ -74,7 +74,7 @@ class HomeController extends Controller
                 }
 
                 // Get the main post ONLY - lightweight query
-                $post = Post::with('category:id,name,slug', 'author')
+                $post = Post::with('category:id,name,slug', 'author', 'faqs')
                     ->where('slug', $postSlug)
                     ->where('category_id', $category->id)
                     ->where('status', 'published')

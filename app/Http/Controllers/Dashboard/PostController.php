@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Author;
 use App\Models\Post;
+use App\Models\PostFaq;
 use App\Models\Category;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -135,6 +136,9 @@ class PostController extends Controller
             'meta_title' => 'required|string|max:255',
             'meta_description' => 'required|string',
             'meta_keywords' => 'required|string',
+            'faqs' => 'nullable|array',
+            'faqs.*.question' => 'nullable|string|max:500',
+            'faqs.*.answer' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -185,6 +189,8 @@ class PostController extends Controller
 
             $post->save();
 
+            $this->syncFaqs($post, $request->input('faqs', []));
+
             DB::commit();
             return redirect()->route('dashboard.posts.index')->with('success', 'Post Created Successfully');
         } catch (\Throwable $th) {
@@ -229,7 +235,7 @@ class PostController extends Controller
                 ->unique()
                 ->values()
                 ->all();
-            $post = Post::findOrFail($id);
+            $post = Post::with('faqs')->findOrFail($id);
             return view('dashboard.posts.edit', compact('categories', 'uniqueTags', 'post', 'authors'));
         } catch (\Throwable $th) {
             Log::error('Post Edit Failed', ['error' => $th->getMessage()]);
@@ -256,6 +262,9 @@ class PostController extends Controller
             'meta_title' => 'required|string|max:255',
             'meta_description' => 'required|string',
             'meta_keywords' => 'required|string',
+            'faqs' => 'nullable|array',
+            'faqs.*.question' => 'nullable|string|max:500',
+            'faqs.*.answer' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -318,6 +327,9 @@ class PostController extends Controller
             }
 
             $post->save();
+
+            $this->syncFaqs($post, $request->input('faqs', []));
+
             DB::commit();
             return redirect()->route('dashboard.posts.index')->with('success', 'Post Updated Successfully');
         } catch (\Throwable $th) {
@@ -399,5 +411,27 @@ class PostController extends Controller
         return response()->json([
             'location' => url('storage/posts/content/' . $filename) // ✅ full URL
         ]);
+    }
+
+    protected function syncFaqs(Post $post, array $faqs): void
+    {
+        $post->faqs()->delete();
+
+        $order = 0;
+        foreach ($faqs as $faq) {
+            $question = trim($faq['question'] ?? '');
+            $answer = trim($faq['answer'] ?? '');
+
+            if ($question === '' || $answer === '') {
+                continue;
+            }
+
+            PostFaq::create([
+                'post_id' => $post->id,
+                'question' => $question,
+                'answer' => $answer,
+                'sort_order' => $order++
+            ]);
+        }
     }
 }

@@ -125,6 +125,30 @@
                                 </span>
                             @enderror
                         </div>
+                        <h5>Frequently Asked Questions</h5>
+                        <hr>
+                        <div class="col-md-12 mb-4">
+                            <div id="faqs-wrapper">
+                                <div class="faq-row row g-2 mb-3 align-items-start">
+                                    <div class="col-md-5">
+                                        <input type="text" name="faqs[0][question]" class="form-control"
+                                            placeholder="{{ __('Question') }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <textarea name="faqs[0][answer]" class="form-control" rows="2"
+                                            placeholder="{{ __('Answer') }}"></textarea>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-icon btn-text-danger remove-faq-row">
+                                            <i class="ti ti-trash ti-md"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" id="add-faq-row" class="btn btn-sm btn-outline-primary mt-2">
+                                {{ __('+ Add FAQ') }}
+                            </button>
+                        </div>
                         <h5>SEO Details</h5>
                         <hr>
                         <div class="mb-4 col-md-12">
@@ -194,6 +218,35 @@
             }
         });
         $(document).ready(function() {
+            let faqIndex = 1;
+            document.getElementById('add-faq-row').addEventListener('click', function() {
+                const wrapper = document.getElementById('faqs-wrapper');
+                const row = document.createElement('div');
+                row.className = 'faq-row row g-2 mb-3 align-items-start';
+                row.innerHTML = `
+                    <div class="col-md-5">
+                        <input type="text" name="faqs[${faqIndex}][question]" class="form-control" placeholder="Question">
+                    </div>
+                    <div class="col-md-6">
+                        <textarea name="faqs[${faqIndex}][answer]" class="form-control" rows="2" placeholder="Answer"></textarea>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-icon btn-text-danger remove-faq-row">
+                            <i class="ti ti-trash ti-md"></i>
+                        </button>
+                    </div>
+                `;
+                wrapper.appendChild(row);
+                faqIndex++;
+            });
+
+            document.getElementById('faqs-wrapper').addEventListener('click', function(e) {
+                const btn = e.target.closest('.remove-faq-row');
+                if (btn) {
+                    btn.closest('.faq-row').remove();
+                }
+            });
+
             tinymce.init({
                 selector: '#content',
                 height: 500,

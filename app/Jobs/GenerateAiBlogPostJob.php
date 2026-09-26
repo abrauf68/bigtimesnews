@@ -7,6 +7,7 @@ use App\Models\AiBlogTopic;
 use App\Models\Author;
 use App\Models\Category;
 use App\Models\Post;
+use App\Models\PostFaq;
 use App\Services\AiBlog\ClaudeService;
 use App\Services\AiBlog\UnsplashService;
 use Illuminate\Bus\Queueable;
@@ -114,6 +115,22 @@ class GenerateAiBlogPostJob implements ShouldQueue
 
             $post->save();
 
+            $faqs = is_array($final['faqs'] ?? null) ? $final['faqs'] : [];
+            $validFaqCount = count(array_filter($faqs, fn ($f) => !empty($f['question'] ?? null) && !empty($f['answer'] ?? null)));
+
+            if ($validFaqCount < 10) {
+                try {
+                    $faqs = $claude->generateFaqs($title, $content);
+                } catch (\Throwable $e) {
+                    Log::warning('AI blog FAQ fallback generation failed', [
+                        'post_id' => $post->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            $this->saveFaqs($post, $faqs);
+
             DB::commit();
 
             $topic->update(['status' => 'completed', 'post_id' => $post->id]);
@@ -197,6 +214,26 @@ class GenerateAiBlogPostJob implements ShouldQueue
         }
 
         return $content;
+    }
+
+    protected function saveFaqs(Post $post, array $faqs): void
+    {
+        $order = 0;
+        foreach ($faqs as $faq) {
+            $question = $this->cleanText(trim((string) ($faq['question'] ?? '')));
+            $answer = $this->cleanText(trim((string) ($faq['answer'] ?? '')));
+
+            if ($question === '' || $answer === '') {
+                continue;
+            }
+
+            PostFaq::create([
+                'post_id' => $post->id,
+                'question' => $question,
+                'answer' => $answer,
+                'sort_order' => $order++
+            ]);
+        }
     }
 
     protected function uniqueSlug(string $source): string

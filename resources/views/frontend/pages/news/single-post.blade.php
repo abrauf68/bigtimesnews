@@ -52,6 +52,26 @@
             ]
         }
     </script>
+    @if($post->faqs->isNotEmpty())
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "FAQPage",
+            "mainEntity": [
+                @foreach($post->faqs as $faq)
+                {
+                    "@@type": "Question",
+                    "name": {!! json_encode($faq->question) !!},
+                    "acceptedAnswer": {
+                        "@@type": "Answer",
+                        "text": {!! json_encode($faq->answer) !!}
+                    }
+                }@if(!$loop->last),@endif
+                @endforeach
+            ]
+        }
+    </script>
+    @endif
 @endpush
 
 @section('css')
@@ -63,7 +83,7 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
 }
-.post-content h1, .post-content h2, .post-content h3, .post-content h4, .post-content h5, .post-content h6, .post-content p, .post-content li{
+.post-content h1, h2, h3, h4, h5, h6, p, li{
     color: #000 !important;
 }
 .footer-copyright p {
@@ -187,8 +207,52 @@
     padding-left: 20px;
     border-left: 2px solid #eceef1;
 }
+/* FAQ accordion */
+.post-faqs .accordion-item {
+    border: 1px solid #eceef1;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+.post-faqs .accordion-header {
+    margin: 0;
+}
+.post-faqs .accordion-button {
+    width: 100%;
+    text-align: left;
+    background: #fff;
+    border: none;
+    padding: 14px 42px 14px 16px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #16181b;
+    cursor: pointer;
+    position: relative;
+}
+.post-faqs .accordion-button::after {
+    content: '+';
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+    color: #8a8f98;
+    transition: transform 0.2s ease;
+}
+.post-faqs .accordion-button:not(.collapsed)::after {
+    content: '\2212';
+}
+.post-faqs .accordion-collapse {
+    overflow: hidden;
+    transition: height 0.2s ease;
+}
+.post-faqs .accordion-body {
+    padding: 4px 16px 16px;
+    color: #3c4149;
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
 
-/* Like button */
 .like-button .like-icon {
     transition: color 0.15s ease, transform 0.15s ease;
 }
@@ -301,6 +365,33 @@
                     </div>
                 </div>
             </div>
+
+            @if($post->faqs->isNotEmpty())
+            <div class="post-faqs panel border-top pt-2 mt-5">
+                <h4 class="h5 xl:h4 mb-5 xl:mb-6">Frequently Asked Questions</h4>
+                <div class="accordion" id="post-faq-accordion">
+                    @foreach($post->faqs as $faq)
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq-heading-{{ $faq->id }}">
+                                <button class="accordion-button {{ $loop->first ? '' : 'collapsed' }}" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#faq-collapse-{{ $faq->id }}"
+                                    aria-expanded="{{ $loop->first ? 'true' : 'false' }}"
+                                    aria-controls="faq-collapse-{{ $faq->id }}">
+                                    {{ $faq->question }}
+                                </button>
+                            </h2>
+                            <div id="faq-collapse-{{ $faq->id }}"
+                                class="accordion-collapse collapse {{ $loop->first ? 'show' : '' }}"
+                                aria-labelledby="faq-heading-{{ $faq->id }}" data-bs-parent="#post-faq-accordion">
+                                <div class="accordion-body">
+                                    {{ $faq->answer }}
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
 
             <!-- Comments Section (AJAX Loaded) -->
             <div id="comments-section">

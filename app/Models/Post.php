@@ -72,6 +72,11 @@ class Post extends Model
         return $this->hasMany(Comment::class);
     }
 
+    public function faqs(): HasMany
+    {
+        return $this->hasMany(PostFaq::class)->orderBy('sort_order');
+    }
+
     // Add likes relationship
     public function likes(): HasMany
     {
