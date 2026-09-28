@@ -54,7 +54,7 @@
             <!-- About Paragraph Section -->
             <div class="about-section mb-4">
                 <p class="text-gray-700 dark:text-gray-300 fs-6 leading-relaxed">
-                    Welcome to {{ \App\Helpers\Helper::getCompanyName() }} — your trusted source for the latest
+                    Welcome to {{ \App\Helpers\Helper::getCompanyName() }} your trusted source for the latest
                     headlines, trending stories, and in-depth coverage
                     on technology, business, and global affairs. We are dedicated to delivering accurate, timely, and
                     insightful
@@ -70,7 +70,7 @@
                     <a href="#"><i class="unicon-logo-pinterest icon-2"></i></a>
                 </li>
             </ul>
-            <div class="py-2 hstack gap-2 mt-4 bg-white dark:bg-gray-900" data-uc-sticky="position: bottom">
+            {{-- <div class="py-2 hstack gap-2 mt-4 bg-white dark:bg-gray-900" data-uc-sticky="position: bottom">
                 <div class="vstack gap-1">
                     <div class="darkmode-trigger" data-darkmode-switch="">
                         <label class="switch">
@@ -79,7 +79,7 @@
                         </label>
                     </div>
                 </div>
-            </div>
+            </div> --}}
         </div>
     </div>
 </div>
@@ -449,14 +449,14 @@
 
 <!--  Bottom Actions Sticky -->
 <div class="backtotop-wrap position-fixed bottom-0 end-0 z-99 m-2 vstack">
-    <div class="darkmode-trigger cstack w-40px h-40px rounded-circle text-none bg-gray-100 dark:bg-gray-700 dark:text-white"
+    {{-- <div class="darkmode-trigger cstack w-40px h-40px rounded-circle text-none bg-gray-100 dark:bg-gray-700 dark:text-white"
         data-darkmode-toggle="">
         <label class="switch">
             <span class="sr-only">Dark mode toggle</span>
             <input type="checkbox">
             <span class="slider fs-5"></span>
         </label>
-    </div>
+    </div> --}}
     <a class="btn btn-sm bg-primary text-white w-40px h-40px rounded-circle" href="to_top" data-uc-backtotop>
         <i class="icon-2 unicon-chevron-up"></i>
     </a>
