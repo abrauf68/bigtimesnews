@@ -19,6 +19,7 @@ use App\Http\Controllers\Dashboard\SettingController;
 use App\Http\Controllers\Dashboard\User\ArchivedUserController;
 use App\Http\Controllers\Dashboard\User\UserController;
 use App\Http\Controllers\Frontend\HomeController as FrontendHomeController;
+use App\Http\Controllers\Frontend\PageController;
 use App\Http\Middleware\CheckAccountActivation;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -212,6 +213,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Frontend Pages Routes
 Route::name('frontend.')->group(function () {
     Route::get('/', [FrontendHomeController::class, 'home'])->name('home');
+
+    // Static SEO pages: About, Contact, Privacy Policy, Terms of Service
+    Route::get('/about', [PageController::class, 'about'])->name('about');
+    Route::get('/contact', [PageController::class, 'contact'])->name('contact');
+    Route::post('/contact', [PageController::class, 'contactSubmit'])->name('contact.submit');
+    Route::get('/privacy-policy', [PageController::class, 'privacy'])->name('privacy');
+    Route::get('/terms-of-service', [PageController::class, 'terms'])->name('terms');
     // Route::get('/posts/{slug?}', [FrontendHomeController::class, 'postDetail'])->name('post.details');
     // Route::get('/news/{category?}/{post?}', [FrontendHomeController::class, 'postDetail'])->name('post.details');
     // Route::get('/category/{slug}', [FrontendHomeController::class, 'category'])->name('category');

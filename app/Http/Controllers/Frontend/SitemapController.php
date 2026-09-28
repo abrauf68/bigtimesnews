@@ -34,6 +34,23 @@ class SitemapController extends Controller
                 'priority' => '0.9',
             ];
 
+            // Static SEO pages
+            $staticPages = [
+                ['route' => 'frontend.about', 'changefreq' => 'monthly', 'priority' => '0.5'],
+                ['route' => 'frontend.contact', 'changefreq' => 'monthly', 'priority' => '0.5'],
+                ['route' => 'frontend.privacy', 'changefreq' => 'yearly', 'priority' => '0.3'],
+                ['route' => 'frontend.terms', 'changefreq' => 'yearly', 'priority' => '0.3'],
+            ];
+
+            foreach ($staticPages as $staticPage) {
+                $urls[] = [
+                    'loc' => route($staticPage['route']),
+                    'lastmod' => \Illuminate\Support\Carbon::parse(config('site.policies_updated'))->toAtomString(),
+                    'changefreq' => $staticPage['changefreq'],
+                    'priority' => $staticPage['priority'],
+                ];
+            }
+
             Category::where('is_active', 'active')->get(['slug', 'updated_at'])->each(function ($category) use (&$urls) {
                 $urls[] = [
                     'loc' => route('frontend.news.category', $category->slug),
