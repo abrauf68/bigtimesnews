@@ -59,5 +59,9 @@
   gtag('config', 'G-WV06PG4LLK');
 </script>
 
+
+<!-- Pinterest -->
+<meta name="p:domain_verify" content="5dd9e1d5be6c054a52322cb8e586836d"/>
+
 <!-- Structured data (JSON-LD) pushed in from individual pages -->
 @stack('schema')
