@@ -19,6 +19,9 @@ use App\Http\Controllers\Dashboard\SettingController;
 use App\Http\Controllers\Dashboard\User\ArchivedUserController;
 use App\Http\Controllers\Dashboard\User\UserController;
 use App\Http\Controllers\Frontend\HomeController as FrontendHomeController;
+use App\Http\Controllers\Dashboard\Social\SocialAccountController;
+use App\Http\Controllers\Dashboard\Social\SocialPostStatusController;
+use App\Http\Controllers\Dashboard\Social\RedditSubredditController;
 use App\Http\Controllers\Frontend\PageController;
 use App\Http\Middleware\CheckAccountActivation;
 use Illuminate\Support\Facades\Route;
@@ -200,6 +203,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::put('/{comment}/status-ajax', [CommentController::class, 'updateStatusAjax'])->name('status.ajax');
                 Route::delete('/reply/{reply}', [CommentController::class, 'deleteReply'])->name('reply.delete');
             });
+
+            Route::prefix('social')->name('social.')->group(function () {
+                Route::get('/', [SocialAccountController::class, 'index'])->name('index');
+                Route::get('/connect/{platform}', [SocialAccountController::class, 'connect'])->name('connect');
+                Route::get('/callback/{platform}', [SocialAccountController::class, 'callback'])->name('callback');
+                Route::post('/{account}/disconnect', [SocialAccountController::class, 'disconnect'])->name('disconnect');
+                Route::post('/{account}/toggle', [SocialAccountController::class, 'toggle'])->name('toggle');
+
+                Route::get('/posts/status', [SocialPostStatusController::class, 'index'])->name('posts.index');
+                Route::put('/targets/{target}/caption', [SocialPostStatusController::class, 'updateCaption'])->name('targets.caption');
+                Route::post('/targets/{target}/retry', [SocialPostStatusController::class, 'retry'])->name('targets.retry');
+
+                Route::get('/subreddits', [RedditSubredditController::class, 'index'])->name('subreddits.index');
+                Route::post('/subreddits', [RedditSubredditController::class, 'store'])->name('subreddits.store');
+                Route::post('/subreddits/{subreddit}/approve', [RedditSubredditController::class, 'approve'])->name('subreddits.approve');
+                Route::delete('/subreddits/{subreddit}', [RedditSubredditController::class, 'destroy'])->name('subreddits.destroy');
+            });
         });
     });
 
@@ -213,6 +233,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Frontend Pages Routes
 Route::name('frontend.')->group(function () {
     Route::get('/', [FrontendHomeController::class, 'home'])->name('home');
+    // Route::get('/posts/{slug?}', [FrontendHomeController::class, 'postDetail'])->name('post.details');
+    // Route::get('/news/{category?}/{post?}', [FrontendHomeController::class, 'postDetail'])->name('post.details');
+    // Route::get('/category/{slug}', [FrontendHomeController::class, 'category'])->name('category');
+    Route::get('/news', [FrontendHomeController::class, 'postDetail'])->name('news.index');
 
     // Static SEO pages: About, Contact, Privacy Policy, Terms of Service
     Route::get('/about', [PageController::class, 'about'])->name('about');
@@ -220,14 +244,10 @@ Route::name('frontend.')->group(function () {
     Route::post('/contact', [PageController::class, 'contactSubmit'])->name('contact.submit');
     Route::get('/privacy-policy', [PageController::class, 'privacy'])->name('privacy');
     Route::get('/terms-of-service', [PageController::class, 'terms'])->name('terms');
-    // Route::get('/posts/{slug?}', [FrontendHomeController::class, 'postDetail'])->name('post.details');
-    // Route::get('/news/{category?}/{post?}', [FrontendHomeController::class, 'postDetail'])->name('post.details');
-    // Route::get('/category/{slug}', [FrontendHomeController::class, 'category'])->name('category');
-    Route::get('/news', [FrontendHomeController::class, 'postDetail'])->name('news.index');
 
-Route::get('/news/{category}', [FrontendHomeController::class, 'postDetail'])->name('news.category');
+    Route::get('/news/{category}', [FrontendHomeController::class, 'postDetail'])->name('news.category');
 
-Route::get('/news/{category}/{post}', [FrontendHomeController::class, 'postDetail'])->name('news.show');
+    Route::get('/news/{category}/{post}', [FrontendHomeController::class, 'postDetail'])->name('news.show');
     Route::post('/newsletter/store', [FrontendHomeController::class, 'newsletterStore'])->name('newsletter.store');
 });
 

@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Contracts\Social\CaptionGeneratorContract;
 use App\Models\Post;
 use App\Observers\PostObserver;
 use App\Rules\MaxUploadSize;
+use App\Support\Social\ClaudeCaptionGenerator;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
 
@@ -15,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(CaptionGeneratorContract::class, ClaudeCaptionGenerator::class);
     }
 
     /**

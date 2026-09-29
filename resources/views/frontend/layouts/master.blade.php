@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="ltr">
 
 <head>
-    <title>@yield('title') - {{ \App\Helpers\Helper::getCompanyName() }}</title>
+    <title>@yield('title') | {{ \App\Helpers\Helper::getCompanyName() }}</title>
     @include('frontend.layouts.meta')
     <script type="application/ld+json">
         {

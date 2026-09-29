@@ -35,6 +35,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('ai-blog:send-summary')
             ->everyFiveMinutes()
             ->withoutOverlapping();
+
+        $schedule->command('social:refresh-tokens')
+            ->hourly()
+            ->withoutOverlapping();
     }
 
     /**

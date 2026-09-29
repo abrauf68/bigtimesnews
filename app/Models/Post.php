@@ -31,12 +31,14 @@ class Post extends Model
         'tags',
         'status',
         'views',
-        'published_at'
+        'published_at',
+        'social_dispatched_at'
     ];
 
     protected $casts = [
         'tags' => 'array',
         'published_at' => 'datetime',
+        'social_dispatched_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
 
@@ -75,6 +77,16 @@ class Post extends Model
     public function faqs(): HasMany
     {
         return $this->hasMany(PostFaq::class)->orderBy('sort_order');
+    }
+
+    public function socialTargets(): HasMany
+    {
+        return $this->hasMany(\App\Models\SocialPostTarget::class);
+    }
+
+    public function needsSocialDispatch(): bool
+    {
+        return $this->status === 'published' && $this->social_dispatched_at === null;
     }
 
     // Add likes relationship

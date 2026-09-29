@@ -110,6 +110,14 @@
             </li>
         @endcan
         @can(['view setting'])
+            <li class="menu-item {{ request()->routeIs('dashboard.social.*') ? 'active' : '' }}">
+                <a href="{{ route('dashboard.social.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-share"></i>
+                    <div>{{ __('Social Publishing') }}</div>
+                </a>
+            </li>
+        @endcan
+        @can(['view setting'])
             <li class="menu-item {{ request()->routeIs('dashboard.setting.*') ? 'active' : '' }}">
                 <a href="{{ route('dashboard.setting.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons ti ti-settings"></i>

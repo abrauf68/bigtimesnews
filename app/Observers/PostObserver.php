@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Jobs\Social\DispatchSocialPublishingJob;
 use App\Models\Post;
 use Illuminate\Support\Facades\Cache;
 
@@ -13,6 +14,7 @@ class PostObserver
     public function created(Post $post): void
     {
         $this->clearPostCaches();
+        $this->maybeDispatchSocialPublishing($post);
     }
 
     /**
@@ -21,6 +23,7 @@ class PostObserver
     public function updated(Post $post): void
     {
         $this->clearPostCaches();
+        $this->maybeDispatchSocialPublishing($post);
     }
 
     /**
@@ -50,6 +53,13 @@ class PostObserver
     /**
      * Clear all post-related caches
      */
+    private function maybeDispatchSocialPublishing(Post $post): void
+    {
+        if ($post->needsSocialDispatch()) {
+            DispatchSocialPublishingJob::dispatch($post->id);
+        }
+    }
+
     private function clearPostCaches(): void
     {
         // Clear navbar latest posts

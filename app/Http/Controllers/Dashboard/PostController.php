@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Enums\SocialPlatform;
 use App\Http\Controllers\Controller;
 use App\Models\Author;
+use App\Models\SocialPostTarget;
 use App\Models\Post;
 use App\Models\PostFaq;
 use App\Models\Category;
@@ -110,7 +112,8 @@ class PostController extends Controller
                 ->unique()
                 ->values()
                 ->all();
-            return view('dashboard.posts.create', compact('categories', 'uniqueTags', 'authors'));
+            $socialPlatforms = SocialPlatform::cases();
+            return view('dashboard.posts.create', compact('categories', 'uniqueTags', 'authors', 'socialPlatforms'));
         } catch (\Throwable $th) {
             Log::error('Post Create Failed', ['error' => $th->getMessage()]);
             return redirect()->back()->with('error', "Something went wrong! Please try again later");
@@ -190,6 +193,7 @@ class PostController extends Controller
             $post->save();
 
             $this->syncFaqs($post, $request->input('faqs', []));
+            $this->syncSocialTargets($post, $request->input('social_platforms', []));
 
             DB::commit();
             return redirect()->route('dashboard.posts.index')->with('success', 'Post Created Successfully');
@@ -235,8 +239,10 @@ class PostController extends Controller
                 ->unique()
                 ->values()
                 ->all();
-            $post = Post::with('faqs')->findOrFail($id);
-            return view('dashboard.posts.edit', compact('categories', 'uniqueTags', 'post', 'authors'));
+            $post = Post::with('faqs', 'socialTargets')->findOrFail($id);
+            $socialPlatforms = SocialPlatform::cases();
+            $socialTargets = $post->socialTargets->keyBy('platform');
+            return view('dashboard.posts.edit', compact('categories', 'uniqueTags', 'post', 'authors', 'socialPlatforms', 'socialTargets'));
         } catch (\Throwable $th) {
             Log::error('Post Edit Failed', ['error' => $th->getMessage()]);
             return redirect()->back()->with('error', "Something went wrong! Please try again later");
@@ -329,6 +335,7 @@ class PostController extends Controller
             $post->save();
 
             $this->syncFaqs($post, $request->input('faqs', []));
+            $this->syncSocialTargets($post, $request->input('social_platforms', []));
 
             DB::commit();
             return redirect()->route('dashboard.posts.index')->with('success', 'Post Updated Successfully');
@@ -432,6 +439,24 @@ class PostController extends Controller
                 'answer' => $answer,
                 'sort_order' => $order++
             ]);
+        }
+    }
+
+    protected function syncSocialTargets(Post $post, array $enabledPlatforms): void
+    {
+        foreach (SocialPlatform::cases() as $platform) {
+            $existing = SocialPostTarget::where('post_id', $post->id)
+                ->where('platform', $platform->value)
+                ->first();
+
+            if ($existing && $existing->status === 'posted') {
+                continue;
+            }
+
+            SocialPostTarget::updateOrCreate(
+                ['post_id' => $post->id, 'platform' => $platform->value],
+                ['is_enabled' => in_array($platform->value, $enabledPlatforms, true)]
+            );
         }
     }
 }

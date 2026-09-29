@@ -189,6 +189,16 @@
                             @enderror
                         </div>
                     </div>
+                    <div class="row p-5 pt-0">
+                        <h5 class="mb-3">{{ __('Social Auto-Publishing') }}</h5>
+                        <p class="text-muted mb-3">{{ __('Choose which platforms this post should be posted to automatically the first time it is published.') }}</p>
+                        @foreach ($socialPlatforms as $platform)
+                            <div class="form-check form-switch col-md-3 mb-2">
+                                <input class="form-check-input" type="checkbox" name="social_platforms[]" value="{{ $platform->value }}" id="social_{{ $platform->value }}" checked>
+                                <label class="form-check-label" for="social_{{ $platform->value }}">{{ $platform->label() }}</label>
+                            </div>
+                        @endforeach
+                    </div>
                     <div class="mt-2">
                         <button type="submit" class="btn btn-primary me-3">{{ __('Add Post') }}</button>
                     </div>
