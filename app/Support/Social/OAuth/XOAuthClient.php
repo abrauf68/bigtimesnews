@@ -3,6 +3,8 @@
 namespace App\Support\Social\OAuth;
 
 use App\Contracts\Social\OAuthClientContract;
+use App\Enums\SocialPlatform;
+use App\Support\Social\PlatformCredentials;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -10,6 +12,10 @@ use RuntimeException;
 
 class XOAuthClient implements OAuthClientContract
 {
+    public function __construct(protected PlatformCredentials $credentials)
+    {
+    }
+
     public function authorizeUrl(string $state): string
     {
         $verifier = Str::random(64);
@@ -18,8 +24,8 @@ class XOAuthClient implements OAuthClientContract
 
         $params = [
             'response_type' => 'code',
-            'client_id' => config('social.platforms.x.client_id'),
-            'redirect_uri' => route('dashboard.social.callback', 'x'),
+            'client_id' => $this->credentials->clientId(SocialPlatform::X),
+            'redirect_uri' => route('social.callback', 'x'),
             'scope' => 'tweet.read tweet.write users.read offline.access',
             'state' => $state,
             'code_challenge' => $challenge,
@@ -34,11 +40,11 @@ class XOAuthClient implements OAuthClientContract
         $verifier = session('social_x_code_verifier');
 
         $response = Http::asForm()
-            ->withBasicAuth(config('social.platforms.x.client_id'), config('social.platforms.x.client_secret'))
+            ->withBasicAuth($this->credentials->clientId(SocialPlatform::X), $this->credentials->clientSecret(SocialPlatform::X))
             ->post('https://api.x.com/2/oauth2/token', [
                 'grant_type' => 'authorization_code',
                 'code' => $code,
-                'redirect_uri' => route('dashboard.social.callback', 'x'),
+                'redirect_uri' => route('social.callback', 'x'),
                 'code_verifier' => $verifier,
             ]);
 
@@ -48,7 +54,7 @@ class XOAuthClient implements OAuthClientContract
     public function refresh(string $refreshToken): array
     {
         $response = Http::asForm()
-            ->withBasicAuth(config('social.platforms.x.client_id'), config('social.platforms.x.client_secret'))
+            ->withBasicAuth($this->credentials->clientId(SocialPlatform::X), $this->credentials->clientSecret(SocialPlatform::X))
             ->post('https://api.x.com/2/oauth2/token', [
                 'grant_type' => 'refresh_token',
                 'refresh_token' => $refreshToken,

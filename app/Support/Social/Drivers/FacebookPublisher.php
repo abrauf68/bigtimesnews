@@ -3,6 +3,7 @@
 namespace App\Support\Social\Drivers;
 
 use App\Contracts\Social\SocialPublisherContract;
+use App\Enums\SocialPlatform;
 use App\Models\Post;
 use App\Models\SocialPlatformAccount;
 use App\Models\SocialPostTarget;
@@ -12,7 +13,7 @@ class FacebookPublisher extends AbstractHttpPublisher implements SocialPublisher
 {
     public function publish(SocialPostTarget $target, Post $post, SocialPlatformAccount $account): array
     {
-        $pageId = $account->meta['page_id'] ?? config('social.platforms.facebook.page_id');
+        $pageId = $account->meta['page_id'] ?? $this->credentials->setting(SocialPlatform::Facebook, 'page_id');
 
         $response = Http::asForm()->timeout(60)->post("https://graph.facebook.com/v19.0/{$pageId}/photos", [
             'url' => $this->imageUrl($post),

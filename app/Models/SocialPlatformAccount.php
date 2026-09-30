@@ -13,6 +13,9 @@ class SocialPlatformAccount extends Model
 
     protected $fillable = [
         'platform',
+        'client_id',
+        'client_secret',
+        'settings',
         'display_name',
         'external_account_id',
         'access_token',
@@ -30,6 +33,8 @@ class SocialPlatformAccount extends Model
     ];
 
     protected $casts = [
+        'client_secret' => 'encrypted',
+        'settings' => 'array',
         'access_token' => 'encrypted',
         'refresh_token' => 'encrypted',
         'token_expires_at' => 'datetime',
@@ -58,6 +63,11 @@ class SocialPlatformAccount extends Model
     public function isConnected(): bool
     {
         return $this->status === 'connected' && !empty($this->access_token);
+    }
+
+    public function hasCredentials(): bool
+    {
+        return !empty($this->client_id) && !empty($this->client_secret);
     }
 
     public function isHealthy(): bool

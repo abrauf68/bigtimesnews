@@ -5,11 +5,16 @@ namespace App\Support\Social\Drivers;
 use App\Exceptions\Social\InvalidTokenSocialException;
 use App\Exceptions\Social\TemporarySocialException;
 use App\Models\Post;
+use App\Support\Social\PlatformCredentials;
 use Illuminate\Http\Client\Response;
 use RuntimeException;
 
 abstract class AbstractHttpPublisher
 {
+    public function __construct(protected PlatformCredentials $credentials)
+    {
+    }
+
     protected function imageUrl(Post $post): string
     {
         return asset($post->meta_image);

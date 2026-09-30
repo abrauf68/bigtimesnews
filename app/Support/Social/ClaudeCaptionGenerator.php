@@ -97,16 +97,12 @@ class ClaudeCaptionGenerator implements CaptionGeneratorContract
 
     protected function apiKey(): ?string
     {
-        $settings = AiBlogSetting::first();
-
-        return $settings->claude_api_key ?? env('SOCIAL_CLAUDE_API_KEY');
+        return AiBlogSetting::first()?->claude_api_key;
     }
 
     protected function model(): string
     {
-        $settings = AiBlogSetting::first();
-
-        return $settings->claude_qa_model ?? env('SOCIAL_CLAUDE_MODEL', 'claude-haiku-4-5-20251001');
+        return AiBlogSetting::first()?->claude_qa_model ?: 'claude-haiku-4-5-20251001';
     }
 
     protected function postUrl(Post $post): string

@@ -1,12 +1,17 @@
 <div class="card mb-6">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">{{ __('AI Blog Automation') }}</h5>
-        <form action="{{ route('dashboard.setting.ai_blog.run_now') }}" method="POST" class="d-inline">
-            @csrf
-            <button type="submit" class="btn btn-warning">
-                <i class="ti ti-bolt me-1"></i> {{ __('Run Now') }}
-            </button>
-        </form>
+        <div class="d-flex gap-2">
+            <a href="{{ route('dashboard.ai_blog.schedules.index') }}" class="btn btn-outline-primary">
+                <i class="ti ti-clock me-1"></i> {{ __('Manage Time Slots') }}
+            </a>
+            <form action="{{ route('dashboard.setting.ai_blog.run_now') }}" method="POST" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-warning">
+                    <i class="ti ti-bolt me-1"></i> {{ __('Run Now') }}
+                </button>
+            </form>
+        </div>
     </div>
     <div class="card-body pt-4">
         <form id="formAiBlogSettings" method="POST"
@@ -16,6 +21,7 @@
 
             <div class="row p-5">
                 <h3>{{ __('Automation') }}</h3>
+                <p class="text-muted">{{ __('The two fields below are only used as a fallback when no time slots are configured under "Manage Time Slots" above.') }}</p>
 
                 <div class="mb-4 col-md-4">
                     <label for="is_enabled" class="form-label">{{ __('Automation Status') }}</label><span class="text-danger">*</span>

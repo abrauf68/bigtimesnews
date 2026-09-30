@@ -2,6 +2,7 @@
 
 namespace App\Support\Social\OAuth;
 
+use App\Enums\SocialPlatform;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -10,9 +11,9 @@ trait FacebookGraphOAuthTrait
     protected function exchangeUserToken(string $code, string $platformSlug): string
     {
         $response = Http::get('https://graph.facebook.com/v19.0/oauth/access_token', [
-            'client_id' => config('social.platforms.facebook.app_id'),
-            'client_secret' => config('social.platforms.facebook.app_secret'),
-            'redirect_uri' => route('dashboard.social.callback', $platformSlug),
+            'client_id' => $this->credentials->clientId(SocialPlatform::Facebook),
+            'client_secret' => $this->credentials->clientSecret(SocialPlatform::Facebook),
+            'redirect_uri' => route('social.callback', $platformSlug),
             'code' => $code,
         ]);
 
@@ -24,8 +25,8 @@ trait FacebookGraphOAuthTrait
 
         $long = Http::get('https://graph.facebook.com/v19.0/oauth/access_token', [
             'grant_type' => 'fb_exchange_token',
-            'client_id' => config('social.platforms.facebook.app_id'),
-            'client_secret' => config('social.platforms.facebook.app_secret'),
+            'client_id' => $this->credentials->clientId(SocialPlatform::Facebook),
+            'client_secret' => $this->credentials->clientSecret(SocialPlatform::Facebook),
             'fb_exchange_token' => $shortToken,
         ]);
 
@@ -34,7 +35,7 @@ trait FacebookGraphOAuthTrait
 
     protected function findPage(string $userToken): ?array
     {
-        $configuredPageId = config('social.platforms.facebook.page_id');
+        $configuredPageId = $this->credentials->setting(SocialPlatform::Facebook, 'page_id');
 
         $pages = Http::get('https://graph.facebook.com/v19.0/me/accounts', [
             'access_token' => $userToken,

@@ -3,18 +3,24 @@
 namespace App\Support\Social\OAuth;
 
 use App\Contracts\Social\OAuthClientContract;
+use App\Enums\SocialPlatform;
+use App\Support\Social\PlatformCredentials;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 class LinkedInOAuthClient implements OAuthClientContract
 {
+    public function __construct(protected PlatformCredentials $credentials)
+    {
+    }
+
     public function authorizeUrl(string $state): string
     {
         $params = [
             'response_type' => 'code',
-            'client_id' => config('social.platforms.linkedin.client_id'),
-            'redirect_uri' => route('dashboard.social.callback', 'linkedin'),
+            'client_id' => $this->credentials->clientId(SocialPlatform::LinkedIn),
+            'redirect_uri' => route('social.callback', 'linkedin'),
             'state' => $state,
             'scope' => 'w_member_social w_organization_social r_organization_social',
         ];
@@ -27,9 +33,9 @@ class LinkedInOAuthClient implements OAuthClientContract
         $response = Http::asForm()->post('https://www.linkedin.com/oauth/v2/accessToken', [
             'grant_type' => 'authorization_code',
             'code' => $code,
-            'redirect_uri' => route('dashboard.social.callback', 'linkedin'),
-            'client_id' => config('social.platforms.linkedin.client_id'),
-            'client_secret' => config('social.platforms.linkedin.client_secret'),
+            'redirect_uri' => route('social.callback', 'linkedin'),
+            'client_id' => $this->credentials->clientId(SocialPlatform::LinkedIn),
+            'client_secret' => $this->credentials->clientSecret(SocialPlatform::LinkedIn),
         ]);
 
         return $this->mapToken($response);
@@ -40,8 +46,8 @@ class LinkedInOAuthClient implements OAuthClientContract
         $response = Http::asForm()->post('https://www.linkedin.com/oauth/v2/accessToken', [
             'grant_type' => 'refresh_token',
             'refresh_token' => $refreshToken,
-            'client_id' => config('social.platforms.linkedin.client_id'),
-            'client_secret' => config('social.platforms.linkedin.client_secret'),
+            'client_id' => $this->credentials->clientId(SocialPlatform::LinkedIn),
+            'client_secret' => $this->credentials->clientSecret(SocialPlatform::LinkedIn),
         ]);
 
         return $this->mapToken($response);

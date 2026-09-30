@@ -13,7 +13,7 @@ class LinkedInPublisher extends AbstractHttpPublisher implements SocialPublisher
 {
     public function publish(SocialPostTarget $target, Post $post, SocialPlatformAccount $account): array
     {
-        $owner = $account->meta['organization_urn'] ?? config('social.platforms.linkedin.organization_urn');
+        $owner = $this->credentials->setting(\App\Enums\SocialPlatform::LinkedIn, 'organization_urn');
 
         $register = Http::withToken($account->access_token)
             ->withHeaders(['X-Restli-Protocol-Version' => '2.0.0'])

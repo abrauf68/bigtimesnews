@@ -179,7 +179,7 @@ class SocialPublishingService
             return;
         }
 
-        $adminEmail = AiBlogSetting::first()->admin_email ?? config('mail.from.address');
+        $adminEmail = AiBlogSetting::first()?->admin_email ?? config('mail.from.address');
 
         if (empty($adminEmail)) {
             return;

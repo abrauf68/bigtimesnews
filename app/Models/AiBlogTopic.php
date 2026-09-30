@@ -15,6 +15,8 @@ class AiBlogTopic extends Model
         'topic_hash',
         'context',
         'country',
+        'category_id',
+        'ai_blog_schedule_id',
         'status',
         'post_id',
         'error_message',
@@ -28,6 +30,16 @@ class AiBlogTopic extends Model
     public function post(): BelongsTo
     {
         return $this->belongsTo(Post::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function schedule(): BelongsTo
+    {
+        return $this->belongsTo(AiBlogSchedule::class, 'ai_blog_schedule_id');
     }
 
     public static function hashFor(string $topic): string

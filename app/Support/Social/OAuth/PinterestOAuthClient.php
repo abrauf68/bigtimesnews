@@ -3,18 +3,24 @@
 namespace App\Support\Social\OAuth;
 
 use App\Contracts\Social\OAuthClientContract;
+use App\Enums\SocialPlatform;
+use App\Support\Social\PlatformCredentials;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 class PinterestOAuthClient implements OAuthClientContract
 {
+    public function __construct(protected PlatformCredentials $credentials)
+    {
+    }
+
     public function authorizeUrl(string $state): string
     {
         $params = [
             'response_type' => 'code',
-            'client_id' => config('social.platforms.pinterest.client_id'),
-            'redirect_uri' => route('dashboard.social.callback', 'pinterest'),
+            'client_id' => $this->credentials->clientId(SocialPlatform::Pinterest),
+            'redirect_uri' => route('social.callback', 'pinterest'),
             'state' => $state,
             'scope' => 'boards:read,pins:write,pins:read',
         ];
@@ -25,11 +31,11 @@ class PinterestOAuthClient implements OAuthClientContract
     public function exchangeCode(string $code): array
     {
         $response = Http::asForm()
-            ->withBasicAuth(config('social.platforms.pinterest.client_id'), config('social.platforms.pinterest.client_secret'))
+            ->withBasicAuth($this->credentials->clientId(SocialPlatform::Pinterest), $this->credentials->clientSecret(SocialPlatform::Pinterest))
             ->post('https://api.pinterest.com/v5/oauth/token', [
                 'grant_type' => 'authorization_code',
                 'code' => $code,
-                'redirect_uri' => route('dashboard.social.callback', 'pinterest'),
+                'redirect_uri' => route('social.callback', 'pinterest'),
             ]);
 
         return $this->mapToken($response);
@@ -38,7 +44,7 @@ class PinterestOAuthClient implements OAuthClientContract
     public function refresh(string $refreshToken): array
     {
         $response = Http::asForm()
-            ->withBasicAuth(config('social.platforms.pinterest.client_id'), config('social.platforms.pinterest.client_secret'))
+            ->withBasicAuth($this->credentials->clientId(SocialPlatform::Pinterest), $this->credentials->clientSecret(SocialPlatform::Pinterest))
             ->post('https://api.pinterest.com/v5/oauth/token', [
                 'grant_type' => 'refresh_token',
                 'refresh_token' => $refreshToken,

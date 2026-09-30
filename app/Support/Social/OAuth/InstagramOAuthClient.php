@@ -3,6 +3,7 @@
 namespace App\Support\Social\OAuth;
 
 use App\Contracts\Social\OAuthClientContract;
+use App\Support\Social\PlatformCredentials;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -10,11 +11,15 @@ class InstagramOAuthClient implements OAuthClientContract
 {
     use FacebookGraphOAuthTrait;
 
+    public function __construct(protected PlatformCredentials $credentials)
+    {
+    }
+
     public function authorizeUrl(string $state): string
     {
         $params = [
-            'client_id' => config('social.platforms.facebook.app_id'),
-            'redirect_uri' => route('dashboard.social.callback', 'instagram'),
+            'client_id' => $this->credentials->clientId(\App\Enums\SocialPlatform::Facebook),
+            'redirect_uri' => route('social.callback', 'instagram'),
             'state' => $state,
             'scope' => 'pages_show_list,instagram_basic,instagram_content_publish,business_management',
         ];

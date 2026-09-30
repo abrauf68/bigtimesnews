@@ -2,8 +2,6 @@
 
 return [
 
-    'connect_redirect_base' => env('SOCIAL_CONNECT_REDIRECT_BASE', env('APP_URL')),
-
     'drivers' => [
         'x' => \App\Support\Social\Drivers\XPublisher::class,
         'facebook' => \App\Support\Social\Drivers\FacebookPublisher::class,
@@ -12,6 +10,27 @@ return [
         'pinterest' => \App\Support\Social\Drivers\PinterestPublisher::class,
         'tumblr' => \App\Support\Social\Drivers\TumblrPublisher::class,
         'reddit' => \App\Support\Social\Drivers\RedditPublisher::class,
+    ],
+
+    'credential_fields' => [
+        'x' => [],
+        'facebook' => [
+            'page_id' => 'Facebook Page ID (optional — leave blank to auto-select the first Page you manage)',
+        ],
+        'instagram' => [],
+        'linkedin' => [
+            'organization_urn' => 'Organization URN (e.g. urn:li:organization:12345678)',
+        ],
+        'pinterest' => [
+            'board_id' => 'Board ID to pin to',
+        ],
+        'tumblr' => [
+            'blog_identifier' => 'Blog identifier (e.g. yourblog.tumblr.com)',
+        ],
+        'reddit' => [
+            'username' => 'Reddit bot account username',
+            'user_agent' => 'User agent string (e.g. yourapp-publisher/1.0 by yourusername)',
+        ],
     ],
 
     'platforms' => [
@@ -25,10 +44,6 @@ return [
                 'min_width' => 200,
                 'min_height' => 200,
             ],
-            'client_id' => env('X_CLIENT_ID'),
-            'client_secret' => env('X_CLIENT_SECRET'),
-            'api_key' => env('X_API_KEY'),
-            'api_secret' => env('X_API_SECRET'),
         ],
 
         'facebook' => [
@@ -40,9 +55,6 @@ return [
                 'min_width' => 200,
                 'min_height' => 200,
             ],
-            'app_id' => env('FACEBOOK_APP_ID'),
-            'app_secret' => env('FACEBOOK_APP_SECRET'),
-            'page_id' => env('FACEBOOK_PAGE_ID'),
         ],
 
         'instagram' => [
@@ -58,9 +70,6 @@ return [
                 'min_aspect_ratio' => 0.8,
                 'max_aspect_ratio' => 1.91,
             ],
-            'app_id' => env('FACEBOOK_APP_ID'),
-            'app_secret' => env('FACEBOOK_APP_SECRET'),
-            'ig_business_account_id' => env('INSTAGRAM_BUSINESS_ACCOUNT_ID'),
         ],
 
         'linkedin' => [
@@ -72,9 +81,6 @@ return [
                 'min_width' => 200,
                 'min_height' => 200,
             ],
-            'client_id' => env('LINKEDIN_CLIENT_ID'),
-            'client_secret' => env('LINKEDIN_CLIENT_SECRET'),
-            'organization_urn' => env('LINKEDIN_ORGANIZATION_URN'),
         ],
 
         'pinterest' => [
@@ -90,9 +96,6 @@ return [
                 'min_aspect_ratio' => 0.5,
                 'max_aspect_ratio' => 1.0,
             ],
-            'client_id' => env('PINTEREST_CLIENT_ID'),
-            'client_secret' => env('PINTEREST_CLIENT_SECRET'),
-            'board_id' => env('PINTEREST_BOARD_ID'),
         ],
 
         'tumblr' => [
@@ -104,9 +107,6 @@ return [
                 'min_width' => 200,
                 'min_height' => 200,
             ],
-            'client_id' => env('TUMBLR_CLIENT_ID'),
-            'client_secret' => env('TUMBLR_CLIENT_SECRET'),
-            'blog_identifier' => env('TUMBLR_BLOG_IDENTIFIER'),
         ],
 
         'reddit' => [
@@ -121,10 +121,6 @@ return [
                 'min_width' => 200,
                 'min_height' => 200,
             ],
-            'client_id' => env('REDDIT_CLIENT_ID'),
-            'client_secret' => env('REDDIT_CLIENT_SECRET'),
-            'username' => env('REDDIT_USERNAME'),
-            'user_agent' => env('REDDIT_USER_AGENT', 'bigtimesnews-publisher/1.0'),
         ],
 
     ],

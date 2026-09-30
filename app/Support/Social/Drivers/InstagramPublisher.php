@@ -12,7 +12,7 @@ class InstagramPublisher extends AbstractHttpPublisher implements SocialPublishe
 {
     public function publish(SocialPostTarget $target, Post $post, SocialPlatformAccount $account): array
     {
-        $igUserId = $account->meta['ig_business_account_id'] ?? config('social.platforms.instagram.ig_business_account_id');
+        $igUserId = $account->meta['ig_business_account_id'] ?? null;
 
         $create = Http::asForm()->timeout(60)->post("https://graph.facebook.com/v19.0/{$igUserId}/media", [
             'image_url' => $this->imageUrl($post),

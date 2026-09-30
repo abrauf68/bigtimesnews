@@ -12,7 +12,7 @@ class TumblrPublisher extends AbstractHttpPublisher implements SocialPublisherCo
 {
     public function publish(SocialPostTarget $target, Post $post, SocialPlatformAccount $account): array
     {
-        $blog = $account->meta['blog_identifier'] ?? config('social.platforms.tumblr.blog_identifier');
+        $blog = $this->credentials->setting(\App\Enums\SocialPlatform::Tumblr, 'blog_identifier');
         $tags = is_array($post->tags) ? $post->tags : (json_decode((string) $post->tags, true) ?: []);
 
         $response = Http::withToken($account->access_token)->timeout(60)->post("https://api.tumblr.com/v2/blog/{$blog}/posts", [

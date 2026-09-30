@@ -65,7 +65,8 @@ class GenerateAiBlogPostJob implements ShouldQueue
             );
             $final = $claude->humanizeAndQa($draft);
 
-            $categoryId = $this->resolveCategoryId($final['category'] ?? null, $activeCategories, $settings->default_category_id);
+            $fallbackCategoryId = $topic->category_id ?: $settings->default_category_id;
+            $categoryId = $this->resolveCategoryId($final['category'] ?? null, $activeCategories, $fallbackCategoryId);
 
             $title = $this->cleanText(trim((string) ($final['title'] ?? $topic->topic)));
             $slug = $this->uniqueSlug($final['slug'] ?? $title);

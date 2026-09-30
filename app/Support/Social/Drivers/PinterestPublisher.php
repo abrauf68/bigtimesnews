@@ -12,7 +12,7 @@ class PinterestPublisher extends AbstractHttpPublisher implements SocialPublishe
 {
     public function publish(SocialPostTarget $target, Post $post, SocialPlatformAccount $account): array
     {
-        $boardId = $account->meta['board_id'] ?? config('social.platforms.pinterest.board_id');
+        $boardId = $this->credentials->setting(\App\Enums\SocialPlatform::Pinterest, 'board_id');
 
         $response = Http::withToken($account->access_token)->timeout(60)->post('https://api.pinterest.com/v5/pins', [
             'board_id' => $boardId,

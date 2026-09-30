@@ -24,7 +24,7 @@ class RedditPublisher extends AbstractHttpPublisher implements SocialPublisherCo
         }
 
         $response = Http::withToken($account->access_token)
-            ->withHeaders(['User-Agent' => config('social.platforms.reddit.user_agent')])
+            ->withHeaders(['User-Agent' => $this->credentials->setting(\App\Enums\SocialPlatform::Reddit, 'user_agent', 'social-publisher/1.0')])
             ->asForm()
             ->timeout(60)
             ->post('https://oauth.reddit.com/api/submit', [

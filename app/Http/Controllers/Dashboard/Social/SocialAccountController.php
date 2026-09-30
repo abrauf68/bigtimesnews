@@ -24,6 +24,17 @@ class SocialAccountController extends Controller
     public function connect(string $platform, OAuthClientManager $manager)
     {
         $platformEnum = SocialPlatform::from($platform);
+        $account = SocialPlatformAccount::where('platform', $platformEnum->value)->first();
+
+        $effectiveAccount = $account;
+        if ($platformEnum === SocialPlatform::Instagram && (!$account || !$account->hasCredentials())) {
+            $effectiveAccount = SocialPlatformAccount::where('platform', SocialPlatform::Facebook->value)->first();
+        }
+
+        if (!$effectiveAccount || !$effectiveAccount->hasCredentials()) {
+            return redirect()->route('dashboard.social.index')->with('error', 'Please save the Client ID and Client Secret for ' . $platformEnum->label() . ' first.');
+        }
+
         $state = Str::random(40);
         session(['social_oauth_state' => $state]);
 
@@ -96,5 +107,38 @@ class SocialAccountController extends Controller
         $account->update(['is_enabled' => !$account->is_enabled]);
 
         return redirect()->route('dashboard.social.index')->with('success', $account->platformEnum()->label() . ' updated.');
+    }
+
+    public function updateCredentials(Request $request, string $platform)
+    {
+        $platformEnum = SocialPlatform::from($platform);
+
+        $request->validate([
+            'client_id' => 'nullable|string|max:255',
+            'client_secret' => 'nullable|string|max:1000',
+            'settings' => 'nullable|array',
+        ]);
+
+        $account = SocialPlatformAccount::firstOrNew(['platform' => $platformEnum->value]);
+
+        if ($request->filled('client_id')) {
+            $account->client_id = $request->input('client_id');
+        }
+
+        if ($request->filled('client_secret')) {
+            $account->client_secret = $request->input('client_secret');
+        }
+
+        $account->settings = array_filter((array) $request->input('settings', []), fn ($value) => $value !== null && $value !== '');
+
+        if (!$account->exists) {
+            $account->status = 'disconnected';
+            $account->health = 'healthy';
+            $account->is_enabled = false;
+        }
+
+        $account->save();
+
+        return redirect()->route('dashboard.social.index')->with('success', $platformEnum->label() . ' credentials saved.');
     }
 }

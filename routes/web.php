@@ -22,7 +22,7 @@ use App\Http\Controllers\Frontend\HomeController as FrontendHomeController;
 use App\Http\Controllers\Dashboard\Social\SocialAccountController;
 use App\Http\Controllers\Dashboard\Social\SocialPostStatusController;
 use App\Http\Controllers\Dashboard\Social\RedditSubredditController;
-use App\Http\Controllers\Frontend\PageController;
+use App\Http\Controllers\Dashboard\AiBlogScheduleController;
 use App\Http\Middleware\CheckAccountActivation;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -127,6 +127,8 @@ Route::group(['middleware' => ['auth']], function () {
     // Verified notification
 });
 
+Route::get('/social/callback/{platform}', [SocialAccountController::class, 'callback'])->name('social.callback');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/deactivated', function () {
         return view('errors.deactivated');
@@ -170,6 +172,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('ai-blog/setting/run-now', [SettingController::class, 'runAiBlogNow'])->name('setting.ai_blog.run_now');
             Route::post('ai-blog/topic/{id}/regenerate', [SettingController::class, 'regenerateAiBlogTopic'])->name('setting.ai_blog.regenerate');
 
+            Route::prefix('ai-blog/schedules')->name('ai_blog.schedules.')->group(function () {
+                Route::get('/', [AiBlogScheduleController::class, 'index'])->name('index');
+                Route::post('/', [AiBlogScheduleController::class, 'store'])->name('store');
+                Route::put('/{schedule}', [AiBlogScheduleController::class, 'update'])->name('update');
+                Route::post('/{schedule}/toggle', [AiBlogScheduleController::class, 'toggle'])->name('toggle');
+                Route::delete('/{schedule}', [AiBlogScheduleController::class, 'destroy'])->name('destroy');
+            });
+
             // User Dashboard Authentication Routes
 
 
@@ -207,7 +217,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::prefix('social')->name('social.')->group(function () {
                 Route::get('/', [SocialAccountController::class, 'index'])->name('index');
                 Route::get('/connect/{platform}', [SocialAccountController::class, 'connect'])->name('connect');
-                Route::get('/callback/{platform}', [SocialAccountController::class, 'callback'])->name('callback');
+                Route::post('/credentials/{platform}', [SocialAccountController::class, 'updateCredentials'])->name('credentials.update');
                 Route::post('/{account}/disconnect', [SocialAccountController::class, 'disconnect'])->name('disconnect');
                 Route::post('/{account}/toggle', [SocialAccountController::class, 'toggle'])->name('toggle');
 
@@ -238,16 +248,9 @@ Route::name('frontend.')->group(function () {
     // Route::get('/category/{slug}', [FrontendHomeController::class, 'category'])->name('category');
     Route::get('/news', [FrontendHomeController::class, 'postDetail'])->name('news.index');
 
-    // Static SEO pages: About, Contact, Privacy Policy, Terms of Service
-    Route::get('/about', [PageController::class, 'about'])->name('about');
-    Route::get('/contact', [PageController::class, 'contact'])->name('contact');
-    Route::post('/contact', [PageController::class, 'contactSubmit'])->name('contact.submit');
-    Route::get('/privacy-policy', [PageController::class, 'privacy'])->name('privacy');
-    Route::get('/terms-of-service', [PageController::class, 'terms'])->name('terms');
+Route::get('/news/{category}', [FrontendHomeController::class, 'postDetail'])->name('news.category');
 
-    Route::get('/news/{category}', [FrontendHomeController::class, 'postDetail'])->name('news.category');
-
-    Route::get('/news/{category}/{post}', [FrontendHomeController::class, 'postDetail'])->name('news.show');
+Route::get('/news/{category}/{post}', [FrontendHomeController::class, 'postDetail'])->name('news.show');
     Route::post('/newsletter/store', [FrontendHomeController::class, 'newsletterStore'])->name('newsletter.store');
 });
 

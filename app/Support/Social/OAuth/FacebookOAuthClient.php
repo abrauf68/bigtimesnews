@@ -3,17 +3,23 @@
 namespace App\Support\Social\OAuth;
 
 use App\Contracts\Social\OAuthClientContract;
+use App\Enums\SocialPlatform;
+use App\Support\Social\PlatformCredentials;
 use RuntimeException;
 
 class FacebookOAuthClient implements OAuthClientContract
 {
     use FacebookGraphOAuthTrait;
 
+    public function __construct(protected PlatformCredentials $credentials)
+    {
+    }
+
     public function authorizeUrl(string $state): string
     {
         $params = [
-            'client_id' => config('social.platforms.facebook.app_id'),
-            'redirect_uri' => route('dashboard.social.callback', 'facebook'),
+            'client_id' => $this->credentials->clientId(SocialPlatform::Facebook),
+            'redirect_uri' => route('social.callback', 'facebook'),
             'state' => $state,
             'scope' => 'pages_show_list,pages_manage_posts,pages_read_engagement,business_management',
         ];
