@@ -93,8 +93,8 @@ return [
                 'formats' => ['jpg', 'jpeg', 'png'],
                 'min_width' => 200,
                 'min_height' => 300,
-                'min_aspect_ratio' => 0.5,
-                'max_aspect_ratio' => 1.0,
+                'min_aspect_ratio' => null,
+                'max_aspect_ratio' => null,
             ],
         ],
 
