@@ -21,6 +21,7 @@ use App\Http\Controllers\Dashboard\User\UserController;
 use App\Http\Controllers\Frontend\HomeController as FrontendHomeController;
 use App\Http\Controllers\Dashboard\Social\SocialAccountController;
 use App\Http\Controllers\Dashboard\Social\SocialPostStatusController;
+use App\Http\Controllers\Frontend\PageController;
 use App\Http\Controllers\Dashboard\Social\RedditSubredditController;
 use App\Http\Controllers\Dashboard\AiBlogScheduleController;
 use App\Http\Middleware\CheckAccountActivation;
@@ -248,15 +249,22 @@ Route::name('frontend.')->group(function () {
     // Route::get('/category/{slug}', [FrontendHomeController::class, 'category'])->name('category');
     Route::get('/news', [FrontendHomeController::class, 'postDetail'])->name('news.index');
 
-Route::get('/news/{category}', [FrontendHomeController::class, 'postDetail'])->name('news.category');
+    // Static SEO pages: About, Contact, Privacy Policy, Terms of Service
+    Route::get('/about', [PageController::class, 'about'])->name('about');
+    Route::get('/contact', [PageController::class, 'contact'])->name('contact');
+    Route::post('/contact', [PageController::class, 'contactSubmit'])->name('contact.submit');
+    Route::get('/privacy-policy', [PageController::class, 'privacy'])->name('privacy');
+    Route::get('/terms-of-service', [PageController::class, 'terms'])->name('terms');
 
-Route::get('/news/{category}/{post}', [FrontendHomeController::class, 'postDetail'])->name('news.show');
+    Route::get('/news/{category}', [FrontendHomeController::class, 'postDetail'])->name('news.category');
+
+    Route::get('/news/{category}/{post}', [FrontendHomeController::class, 'postDetail'])->name('news.show');
     Route::post('/newsletter/store', [FrontendHomeController::class, 'newsletterStore'])->name('newsletter.store');
 });
 
-// SEO sitemaps
-Route::get('/sitemap.xml', [\App\Http\Controllers\Frontend\SitemapController::class, 'index'])->name('sitemap.index');
-Route::get('/news-sitemap.xml', [\App\Http\Controllers\Frontend\SitemapController::class, 'news'])->name('sitemap.news');
+    // SEO sitemaps
+    Route::get('/sitemap.xml', [\App\Http\Controllers\Frontend\SitemapController::class, 'index'])->name('sitemap.index');
+    Route::get('/news-sitemap.xml', [\App\Http\Controllers\Frontend\SitemapController::class, 'news'])->name('sitemap.news');
 
 
 //Artisan Routes
