@@ -22,7 +22,7 @@ class PinterestOAuthClient implements OAuthClientContract
             'client_id' => $this->credentials->clientId(SocialPlatform::Pinterest),
             'redirect_uri' => route('social.callback', 'pinterest'),
             'state' => $state,
-            'scope' => 'boards:read,pins:write,pins:read',
+            'scope' => 'boards:read,boards:write,pins:read,pins:write',
         ];
 
         return 'https://www.pinterest.com/oauth/?' . http_build_query($params);
