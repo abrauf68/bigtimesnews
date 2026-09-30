@@ -10,26 +10,16 @@ return new class extends Migration
     {
         Schema::table('ai_blog_topics', function (Blueprint $table) {
             if (!Schema::hasColumn('ai_blog_topics', 'category_id')) {
-                $table->foreignId('category_id')
+                $table->unsignedBigInteger('category_id')
                     ->nullable()
-                    ->after('country')
-                    ->constrained('categories')
-                    ->nullOnDelete();
+                    ->after('country');
             }
 
             if (!Schema::hasColumn('ai_blog_topics', 'ai_blog_schedule_id')) {
-                $table->foreignId('ai_blog_schedule_id')
+                $table->unsignedBigInteger('ai_blog_schedule_id')
                     ->nullable()
                     ->after('category_id');
             }
-        });
-
-        // FK separately
-        Schema::table('ai_blog_topics', function (Blueprint $table) {
-            $table->foreign('ai_blog_schedule_id')
-                ->references('id')
-                ->on('ai_blog_schedules')
-                ->nullOnDelete();
         });
     }
 
@@ -37,12 +27,10 @@ return new class extends Migration
     {
         Schema::table('ai_blog_topics', function (Blueprint $table) {
             if (Schema::hasColumn('ai_blog_topics', 'ai_blog_schedule_id')) {
-                $table->dropForeign(['ai_blog_schedule_id']);
                 $table->dropColumn('ai_blog_schedule_id');
             }
 
             if (Schema::hasColumn('ai_blog_topics', 'category_id')) {
-                $table->dropForeign(['category_id']);
                 $table->dropColumn('category_id');
             }
         });
