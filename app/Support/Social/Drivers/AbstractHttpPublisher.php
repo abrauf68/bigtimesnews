@@ -17,7 +17,7 @@ abstract class AbstractHttpPublisher
 
     protected function imageUrl(Post $post): string
     {
-        return asset($post->meta_image);
+        return absolute_media_url($post->meta_image);
     }
 
     protected function postLink(Post $post): string
