@@ -52,6 +52,6 @@ class SocialPostTarget extends Model
 
     public function isRetryable(): bool
     {
-        return in_array($this->status, ['failed', 'pending'], true);
+        return in_array($this->status, ['failed', 'pending', 'skipped'], true);
     }
 }
