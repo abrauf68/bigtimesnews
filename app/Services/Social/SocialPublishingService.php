@@ -75,6 +75,50 @@ class SocialPublishingService
         PublishToPlatformJob::dispatch($target->id);
     }
 
+    public function resendNow(SocialPostTarget $target): array
+    {
+        $target->refresh();
+
+        if ($target->status === 'posted') {
+            return [
+                'success' => true,
+                'message' => $target->platformEnum()->label() . ' was already posted.',
+            ];
+        }
+
+        $target->update([
+            'status' => 'pending',
+            'error_message' => null,
+            'skip_reason' => null,
+        ]);
+
+        try {
+            $this->publishTarget($target, $target->attempts + 1);
+        } catch (Throwable $e) {
+            $target->update([
+                'status' => 'failed',
+                'error_message' => $e->getMessage(),
+            ]);
+        }
+
+        $target->refresh();
+
+        return match ($target->status) {
+            'posted' => [
+                'success' => true,
+                'message' => $target->platformEnum()->label() . ' posted successfully.',
+            ],
+            'skipped' => [
+                'success' => false,
+                'message' => $target->platformEnum()->label() . ' was skipped: ' . $target->skip_reason,
+            ],
+            default => [
+                'success' => false,
+                'message' => $target->platformEnum()->label() . ' failed: ' . ($target->error_message ?: 'Unknown error.'),
+            ],
+        };
+    }
+
     public function publishTarget(SocialPostTarget $target, int $attemptNumber = 1): void
     {
         $target->refresh();

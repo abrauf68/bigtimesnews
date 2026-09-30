@@ -225,6 +225,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::get('/posts/status', [SocialPostStatusController::class, 'index'])->name('posts.index');
                 Route::put('/targets/{target}/caption', [SocialPostStatusController::class, 'updateCaption'])->name('targets.caption');
                 Route::post('/targets/{target}/retry', [SocialPostStatusController::class, 'retry'])->name('targets.retry');
+                Route::post('/targets/{target}/resend-now', [SocialPostStatusController::class, 'resendNow'])->name('targets.resend_now');
 
                 Route::get('/subreddits', [RedditSubredditController::class, 'index'])->name('subreddits.index');
                 Route::post('/subreddits', [RedditSubredditController::class, 'store'])->name('subreddits.store');

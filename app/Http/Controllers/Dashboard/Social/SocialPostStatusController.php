@@ -46,4 +46,13 @@ class SocialPostStatusController extends Controller
 
         return redirect()->back()->with('success', 'Retry queued for ' . $target->platformEnum()->label() . '.');
     }
+
+    public function resendNow(SocialPostTarget $target, SocialPublishingService $service)
+    {
+        set_time_limit(120);
+
+        $result = $service->resendNow($target);
+
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
 }

@@ -85,9 +85,9 @@
                                 </td>
                                 <td>
                                     @if ($target->isRetryable())
-                                        <form action="{{ route('dashboard.social.targets.retry', $target->id) }}" method="POST">
+                                        <form action="{{ route('dashboard.social.targets.resend_now', $target->id) }}" method="POST" onsubmit="this.querySelector('button').disabled = true; this.querySelector('button').innerText = '{{ __('Sending...') }}';">
                                             @csrf
-                                            <button type="submit" class="btn btn-sm btn-outline-primary">{{ __('Retry') }}</button>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">{{ __('Resend Now') }}</button>
                                         </form>
                                     @endif
                                 </td>
