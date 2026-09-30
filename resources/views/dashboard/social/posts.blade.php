@@ -100,8 +100,15 @@
                     </tbody>
                 </table>
             </div>
-            <div class="card-body">
-                {{ $targets->links() }}
+            <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="text-muted small">
+                    {{ __('Showing :from to :to of :total results', [
+                        'from' => $targets->firstItem() ?? 0,
+                        'to' => $targets->lastItem() ?? 0,
+                        'total' => $targets->total(),
+                    ]) }}
+                </div>
+                {{ $targets->onEachSide(1)->links('pagination::bootstrap-5') }}
             </div>
         </div>
     </div>
