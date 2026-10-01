@@ -6,6 +6,7 @@ return [
         'x' => \App\Support\Social\Drivers\XPublisher::class,
         'facebook' => \App\Support\Social\Drivers\FacebookPublisher::class,
         'instagram' => \App\Support\Social\Drivers\InstagramPublisher::class,
+        'threads' => \App\Support\Social\Drivers\ThreadsPublisher::class,
         'linkedin' => \App\Support\Social\Drivers\LinkedInPublisher::class,
         'pinterest' => \App\Support\Social\Drivers\PinterestPublisher::class,
         'tumblr' => \App\Support\Social\Drivers\TumblrPublisher::class,
@@ -18,6 +19,7 @@ return [
             'page_id' => 'Facebook Page ID (optional — leave blank to auto-select the first Page you manage)',
         ],
         'instagram' => [],
+        'threads' => [],
         'linkedin' => [
             'organization_urn' => 'Organization URN (e.g. urn:li:organization:12345678)',
         ],
@@ -69,6 +71,17 @@ return [
                 'min_height' => 320,
                 'min_aspect_ratio' => 0.8,
                 'max_aspect_ratio' => 1.91,
+            ],
+        ],
+
+        'threads' => [
+            'caption_limit' => 500,
+            'supports_image' => true,
+            'image' => [
+                'max_mb' => 8,
+                'formats' => ['jpg', 'jpeg', 'png'],
+                'min_width' => 320,
+                'min_height' => 200,
             ],
         ],
 

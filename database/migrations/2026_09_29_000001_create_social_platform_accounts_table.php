@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('social_platform_accounts', function (Blueprint $table) {
             $table->id();
-            $table->enum('platform', ['x', 'facebook', 'instagram', 'linkedin', 'pinterest', 'tumblr', 'reddit'])->unique();
+            $table->enum('platform', ['x', 'facebook', 'instagram', 'threads', 'linkedin', 'pinterest', 'tumblr', 'reddit'])->unique();
             $table->string('display_name')->nullable();
             $table->string('external_account_id')->nullable();
             $table->text('access_token')->nullable();

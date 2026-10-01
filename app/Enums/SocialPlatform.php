@@ -7,6 +7,7 @@ enum SocialPlatform: string
     case X = 'x';
     case Facebook = 'facebook';
     case Instagram = 'instagram';
+    case Threads = 'threads';
     case LinkedIn = 'linkedin';
     case Pinterest = 'pinterest';
     case Tumblr = 'tumblr';
@@ -18,6 +19,7 @@ enum SocialPlatform: string
             self::X => 'X (Twitter)',
             self::Facebook => 'Facebook',
             self::Instagram => 'Instagram',
+            self::Threads => 'Threads',
             self::LinkedIn => 'LinkedIn',
             self::Pinterest => 'Pinterest',
             self::Tumblr => 'Tumblr',

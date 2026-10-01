@@ -6,6 +6,7 @@ use App\Contracts\Social\OAuthClientContract;
 use App\Enums\SocialPlatform;
 use App\Support\Social\OAuth\FacebookOAuthClient;
 use App\Support\Social\OAuth\InstagramOAuthClient;
+use App\Support\Social\OAuth\ThreadsOAuthClient;
 use App\Support\Social\OAuth\LinkedInOAuthClient;
 use App\Support\Social\OAuth\PinterestOAuthClient;
 use App\Support\Social\OAuth\RedditOAuthClient;
@@ -20,6 +21,7 @@ class OAuthClientManager
             SocialPlatform::X => app(XOAuthClient::class),
             SocialPlatform::Facebook => app(FacebookOAuthClient::class),
             SocialPlatform::Instagram => app(InstagramOAuthClient::class),
+            SocialPlatform::Threads => app(ThreadsOAuthClient::class),
             SocialPlatform::LinkedIn => app(LinkedInOAuthClient::class),
             SocialPlatform::Pinterest => app(PinterestOAuthClient::class),
             SocialPlatform::Tumblr => app(TumblrOAuthClient::class),
