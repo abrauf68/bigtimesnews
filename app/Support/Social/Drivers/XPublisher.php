@@ -13,19 +13,23 @@ class XPublisher extends AbstractHttpPublisher implements SocialPublisherContrac
     public function publish(SocialPostTarget $target, Post $post, SocialPlatformAccount $account): array
     {
         $imageBytes = Http::timeout(30)->get($this->imageUrl($post))->body();
+        $mimeType = (new \finfo(FILEINFO_MIME_TYPE))->buffer($imageBytes) ?: 'image/jpeg';
 
         $mediaResponse = Http::withToken($account->access_token)
             ->asMultipart()
             ->attach('media', $imageBytes, 'image.jpg')
             ->timeout(60)
-            ->post('https://upload.twitter.com/1.1/media/upload.json');
+            ->post('https://api.x.com/2/media/upload', [
+                'media_category' => 'tweet_image',
+                'media_type' => $mimeType,
+            ]);
 
         $this->assertSuccessful($mediaResponse, 'X');
-        $mediaId = $mediaResponse->json('media_id_string');
+        $mediaId = $mediaResponse->json('data.id') ?? $mediaResponse->json('id');
 
         $payload = ['text' => $target->caption];
         if ($mediaId) {
-            $payload['media'] = ['media_ids' => [$mediaId]];
+            $payload['media'] = ['media_ids' => [(string) $mediaId]];
         }
 
         $tweetResponse = Http::withToken($account->access_token)

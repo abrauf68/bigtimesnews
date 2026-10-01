@@ -26,7 +26,7 @@ class XOAuthClient implements OAuthClientContract
             'response_type' => 'code',
             'client_id' => $this->credentials->clientId(SocialPlatform::X),
             'redirect_uri' => route('social.callback', 'x'),
-            'scope' => 'tweet.read tweet.write users.read offline.access',
+            'scope' => 'tweet.read tweet.write users.read offline.access media.write',
             'state' => $state,
             'code_challenge' => $challenge,
             'code_challenge_method' => 'S256',
