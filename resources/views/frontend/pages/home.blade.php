@@ -25,6 +25,8 @@
     @include('frontend.sections.category-sections-home')
 
     @include('frontend.sections.latest-news')
+
+    @include('frontend.components.crawl-links', ['links' => $latestLinks ?? collect(), 'heading' => 'Latest articles'])
 @endsection
 
 @section('script')

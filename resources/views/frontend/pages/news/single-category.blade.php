@@ -258,6 +258,7 @@
                 </div>
             </div>
         </div>
+    @include('frontend.components.crawl-links', ['links' => $latestLinks ?? collect(), 'heading' => 'Latest in this category'])
 @endsection
 
 @section('script')

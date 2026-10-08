@@ -366,6 +366,17 @@
                 </div>
             </div>
 
+            @if(isset($prevLink) || isset($nextLink))
+            <nav class="crawl-prevnext panel mt-4 fs-6" aria-label="Previous and next article">
+                @if($prevLink && $prevLink->category)<a rel="prev" href="{{ route('frontend.news.show', [$prevLink->category->slug, $prevLink->slug]) }}">&laquo; {{ $prevLink->title }}</a>@endif
+                @if($prevLink && $nextLink) &nbsp;|&nbsp; @endif
+                @if($nextLink && $nextLink->category)<a rel="next" href="{{ route('frontend.news.show', [$nextLink->category->slug, $nextLink->slug]) }}">{{ $nextLink->title }} &raquo;</a>@endif
+            </nav>
+            @endif
+
+            @include('frontend.components.crawl-links', ['links' => $sameCategoryLinks ?? collect(), 'heading' => 'More in ' . ($post->category->name ?? 'this category')])
+            @include('frontend.components.crawl-links', ['links' => $latestLinks ?? collect(), 'heading' => 'Latest articles'])
+
             @if($post->faqs->isNotEmpty())
             <div class="post-faqs panel border-top pt-2 mt-5">
                 <h4 class="h5 xl:h4 mb-5 xl:mb-6">Frequently Asked Questions</h4>

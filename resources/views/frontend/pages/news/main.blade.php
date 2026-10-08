@@ -162,6 +162,7 @@
         </div>
     </div>
     <!-- Section start -->
+    @include('frontend.components.crawl-links', ['links' => $latestLinks ?? collect(), 'heading' => 'Latest articles'])
 @endsection
 
 @section('script')

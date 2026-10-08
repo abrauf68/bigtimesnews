@@ -14,11 +14,26 @@ use Illuminate\Support\Facades\Validator;
 
 class HomeController extends Controller
 {
+    /** Latest published posts, used for plain crawlable link lists. */
+    private function latestLinks(int $limit = 20, ?int $exceptId = null, ?int $categoryId = null)
+    {
+        return Post::with('category:id,name,slug')
+            ->where('status', 'published')
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->when($exceptId, fn ($q) => $q->where('id', '!=', $exceptId))
+            ->when($categoryId, fn ($q) => $q->where('category_id', $categoryId))
+            ->latest('published_at')
+            ->limit($limit)
+            ->get(['id', 'title', 'slug', 'category_id', 'published_at']);
+    }
+
     public function home()
     {
         try {
             $page = Page::where('page_name', 'home')->first();
-            return view('frontend.pages.home', compact('page'));
+            $latestLinks = $this->latestLinks(20);
+            return view('frontend.pages.home', compact('page', 'latestLinks'));
         } catch (\Throwable $th) {
             Log::error('Home Index Failed', ['error' => $th->getMessage()]);
             return redirect()->back()->with('error', "Something went wrong! Please try again later");
@@ -81,7 +96,9 @@ class HomeController extends Controller
                     ->firstOrFail();
 
                 // Increment views
-                $post->increment('views');
+                if (!preg_match('/bot|crawl|spider|slurp|bing|yandex|facebookexternalhit/i', (string) request()->userAgent())) {
+                    $post->increment('views');
+                }
 
                 // Get top categories for sidebar (lightweight)
                 $topCategories = Category::withCount('posts')
@@ -89,7 +106,16 @@ class HomeController extends Controller
                     ->limit(5)
                     ->get();
 
-                return view('frontend.pages.news.single-post', compact('post', 'category', 'topCategories'));
+                $sameCategoryLinks = $this->latestLinks(8, $post->id, $post->category_id);
+                $latestLinks = $this->latestLinks(8, $post->id);
+                $prevLink = Post::with('category:id,name,slug')->where('status', 'published')
+                    ->where('category_id', $post->category_id)->where('id', '<', $post->id)
+                    ->orderByDesc('id')->first(['id', 'title', 'slug', 'category_id']);
+                $nextLink = Post::with('category:id,name,slug')->where('status', 'published')
+                    ->where('category_id', $post->category_id)->where('id', '>', $post->id)
+                    ->orderBy('id')->first(['id', 'title', 'slug', 'category_id']);
+
+                return view('frontend.pages.news.single-post', compact('post', 'category', 'topCategories', 'sameCategoryLinks', 'latestLinks', 'prevLink', 'nextLink'));
             }
             $postsQuery = Post::with('category:id,name,slug', 'author')->withCount('comments')->where('status', 'published');
 
@@ -107,7 +133,8 @@ class HomeController extends Controller
                 if($category)
                 {
                     $posts = $postsQuery->where('category_id', $category->id)->latest()->limit(5)->get();
-                    return view('frontend.pages.news.single-category', compact('category', 'posts'));
+                    $latestLinks = $this->latestLinks(20, null, $category->id);
+                    return view('frontend.pages.news.single-category', compact('category', 'posts', 'latestLinks'));
                 }
             }
 
@@ -115,10 +142,13 @@ class HomeController extends Controller
 
             $posts = $postsQuery->latest()->paginate(3)->withQueryString();
 
-            return view('frontend.pages.news.main', compact('posts', 'page'));
+            $latestLinks = $this->latestLinks(20);
+            return view('frontend.pages.news.main', compact('posts', 'page', 'latestLinks'));
+        } catch (\Illuminate\Http\Exceptions\HttpResponseException|\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface|\Illuminate\Database\Eloquent\ModelNotFoundException $th) {
+            throw $th; // real 404s stay 404s for Google
         } catch (\Throwable $th) {
             Log::error('Error loading blogs page: ' . $th->getMessage());
-            return redirect()->back()->with('error', 'An error occurred while loading the blogs page.');
+            abort(500, 'An error occurred while loading the page.');
         }
     }
 }
