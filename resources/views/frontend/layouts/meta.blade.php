@@ -63,5 +63,14 @@
 <!-- Pinterest -->
 <meta name="p:domain_verify" content="5dd9e1d5be6c054a52322cb8e586836d"/>
 
+<!-- Clarity tracking code for https://bigtimesnews.com -->
+<script>
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i+"?ref=bwt";
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "yuq5304dbz");
+</script>
+
 <!-- Structured data (JSON-LD) pushed in from individual pages -->
 @stack('schema')
