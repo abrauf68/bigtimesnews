@@ -9,6 +9,9 @@
 */
 
 return [
+    // IndexNow key (8-128 chars, letters/numbers/dash). .env mein INDEXNOW_KEY set karein.
+    'indexnow_key' => env('INDEXNOW_KEY', ''),
+
     'name'   => env('SITE_NAME', 'Big Times News'),
     'domain' => env('SITE_DOMAIN', 'BigTimesNews.com'),
 

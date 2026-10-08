@@ -15,6 +15,7 @@ class PostObserver
     {
         $this->clearPostCaches();
         $this->maybeDispatchSocialPublishing($post);
+        $this->notifySearchEngines($post);
     }
 
     /**
@@ -24,6 +25,9 @@ class PostObserver
     {
         $this->clearPostCaches();
         $this->maybeDispatchSocialPublishing($post);
+        if ($post->wasChanged(['status', 'slug', 'title', 'content', 'published_at'])) {
+            $this->notifySearchEngines($post);
+        }
     }
 
     /**
@@ -60,8 +64,22 @@ class PostObserver
         }
     }
 
+    private function notifySearchEngines(Post $post): void
+    {
+        if ($post->status !== 'published') {
+            return;
+        }
+        // Response bhejne ke baad chalta hai, queue worker ki zaroorat nahi
+        dispatch(function () use ($post) {
+            \App\Services\IndexNowService::submitPost($post->fresh(['category']) ?? $post);
+        })->afterResponse();
+    }
+
     private function clearPostCaches(): void
     {
+        // Sitemap fresh rakhne ke liye
+        Cache::forget('sitemap:main:urls');
+
         // Clear navbar latest posts
         Cache::forget('navbar_latest_posts');
 

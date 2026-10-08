@@ -242,6 +242,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 });
 
+// IndexNow ownership proof: https://yourdomain.com/{INDEXNOW_KEY}.txt
+Route::get('/{key}.txt', function ($key) {
+    $configured = config('site.indexnow_key');
+    abort_unless($configured && hash_equals($configured, $key), 404);
+    return response($configured, 200)->header('Content-Type', 'text/plain');
+})->where('key', '[A-Za-z0-9\-]{8,128}');
+
 // Frontend Pages Routes
 Route::name('frontend.')->group(function () {
     Route::get('/', [FrontendHomeController::class, 'home'])->name('home');
@@ -249,6 +256,9 @@ Route::name('frontend.')->group(function () {
     // Route::get('/news/{category?}/{post?}', [FrontendHomeController::class, 'postDetail'])->name('post.details');
     // Route::get('/category/{slug}', [FrontendHomeController::class, 'category'])->name('category');
     Route::get('/news', [FrontendHomeController::class, 'postDetail'])->name('news.index');
+
+    // Crawlable, server-rendered list of every published article (plain <a> links + real pagination)
+    Route::get('/archive', [PageController::class, 'archive'])->name('archive');
 
     // Static SEO pages: About, Contact, Privacy Policy, Terms of Service
     Route::get('/about', [PageController::class, 'about'])->name('about');

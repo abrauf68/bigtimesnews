@@ -12,6 +12,17 @@ use Illuminate\Support\Facades\Validator;
 
 class PageController extends Controller
 {
+    public function archive()
+    {
+        $posts = \App\Models\Post::with('category:id,name,slug')
+            ->where('status', 'published')
+            ->whereHas('category')
+            ->orderByDesc('published_at')
+            ->paginate(30);
+
+        return view('frontend.pages.static.archive', compact('posts'));
+    }
+
     public function about()
     {
         try {
