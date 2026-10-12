@@ -279,10 +279,12 @@ Route::name('frontend.')->group(function () {
 
     Route::get('/news/{category}/{post}', [FrontendHomeController::class, 'postDetail'])->name('news.show');
     Route::post('/newsletter/store', [FrontendHomeController::class, 'newsletterStore'])->name('newsletter.store');
+
+    // RSS feed
+    Route::get('/feed.xml', [\App\Http\Controllers\Frontend\FeedController::class, 'index'])->name('feed');
 });
 
     // SEO sitemaps
-    Route::get('/feed.xml', [\App\Http\Controllers\Frontend\FeedController::class, 'index'])->name('feed');
     Route::get('/sitemap.xml', [\App\Http\Controllers\Frontend\SitemapController::class, 'index'])->name('sitemap.index');
     Route::get('/news-sitemap.xml', [\App\Http\Controllers\Frontend\SitemapController::class, 'news'])->name('sitemap.news');
 
