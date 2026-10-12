@@ -181,6 +181,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::delete('/{schedule}', [AiBlogScheduleController::class, 'destroy'])->name('destroy');
             });
 
+            Route::prefix('ai-blog/events')->name('ai_blog.events.')->group(function () {
+                Route::get('/', [\App\Http\Controllers\Dashboard\AiBlogEventController::class, 'index'])->name('index');
+                Route::post('/', [\App\Http\Controllers\Dashboard\AiBlogEventController::class, 'store'])->name('store');
+                Route::post('/{event}/toggle', [\App\Http\Controllers\Dashboard\AiBlogEventController::class, 'toggle'])->name('toggle');
+                Route::delete('/{event}', [\App\Http\Controllers\Dashboard\AiBlogEventController::class, 'destroy'])->name('destroy');
+            });
+
             // User Dashboard Authentication Routes
 
 

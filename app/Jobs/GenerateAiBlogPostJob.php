@@ -61,7 +61,8 @@ class GenerateAiBlogPostJob implements ShouldQueue
                 $topic->topic,
                 (string) $topic->context,
                 (string) $topic->country,
-                $activeCategories->pluck('name')->all()
+                $activeCategories->pluck('name')->all(),
+                (string) ($topic->type ?: 'trend')
             );
             $final = $claude->humanizeAndQa($draft);
 
@@ -69,7 +70,12 @@ class GenerateAiBlogPostJob implements ShouldQueue
             $categoryId = $this->resolveCategoryId($final['category'] ?? null, $activeCategories, $fallbackCategoryId);
 
             $title = $this->cleanText(trim((string) ($final['title'] ?? $topic->topic)));
-            $slug = $this->uniqueSlug($final['slug'] ?? $title);
+            $slugSource = $final['slug'] ?? $title;
+            if (in_array($topic->type, ['upcoming', 'evergreen'], true)) {
+                // Date based and evergreen posts must not carry a year in the URL.
+                $slugSource = trim((string) preg_replace('/(^|[\s\-_])20\d{2}(?=$|[\s\-_])/', ' ', $slugSource));
+            }
+            $slug = $this->uniqueSlug($slugSource);
 
             $unsplash = new UnsplashService($settings);
 

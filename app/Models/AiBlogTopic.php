@@ -13,6 +13,8 @@ class AiBlogTopic extends Model
     protected $fillable = [
         'topic',
         'topic_hash',
+        'type',
+        'source_key',
         'context',
         'country',
         'category_id',

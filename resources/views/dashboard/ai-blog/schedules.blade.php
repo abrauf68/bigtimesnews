@@ -9,7 +9,22 @@
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="alert alert-info">
-            {{ __('Instead of generating all daily posts at once, add multiple time slots below. Each slot runs independently, once per day, at its own time, with its own post count and (optionally) its own country/category focus. If no time slots are added here, the single "Daily Run Time" / "Blogs Per Day" fields on the AI Blog settings page are used as a fallback.') }}
+            {{ __('Instead of generating all daily posts at once, add multiple time slots below. Each slot runs independently, once per day, at its own time. Choose how many Trend, Upcoming date and Evergreen posts each slot should write (and optionally its own country/category focus). If no time slots are added here, the single "Daily Run Time" / "Blogs Per Day" fields on the AI Blog settings page are used as a fallback.') }}
+        </div>
+
+        @if ($errors->any())
+            <div class="alert alert-danger">{{ $errors->first() }}</div>
+        @endif
+
+        @php($dailyTotal = $schedules->where('is_enabled', true)->sum(fn ($s) => $s->totalPosts()))
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+            <div>
+                <span class="badge bg-label-primary me-1">{{ __('Trend') }}: {{ $schedules->where('is_enabled', true)->sum('trend_count') }}</span>
+                <span class="badge bg-label-warning me-1">{{ __('Upcoming') }}: {{ $schedules->where('is_enabled', true)->sum('upcoming_count') }}</span>
+                <span class="badge bg-label-success me-1">{{ __('Evergreen') }}: {{ $schedules->where('is_enabled', true)->sum('evergreen_count') }}</span>
+                <strong>{{ __('Total per day') }}: {{ $dailyTotal }}</strong>
+            </div>
+            <a href="{{ route('dashboard.ai_blog.events.index') }}" class="btn btn-outline-primary btn-sm">{{ __('Manage custom events') }}</a>
         </div>
 
         <div class="card mb-4">
@@ -19,13 +34,21 @@
             <div class="card-body">
                 <form action="{{ route('dashboard.ai_blog.schedules.store') }}" method="POST" class="row g-3">
                     @csrf
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">{{ __('Run Time') }}</label>
                         <input type="time" name="run_time" class="form-control" required>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">{{ __('Posts') }}</label>
-                        <input type="number" name="post_count" min="1" max="20" value="1" class="form-control" required>
+                    <div class="col-md-1">
+                        <label class="form-label">{{ __('Trend') }}</label>
+                        <input type="number" name="trend_count" min="0" max="20" value="1" class="form-control" required>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label">{{ __('Upcoming') }}</label>
+                        <input type="number" name="upcoming_count" min="0" max="20" value="0" class="form-control" required>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label">{{ __('Evergreen') }}</label>
+                        <input type="number" name="evergreen_count" min="0" max="20" value="1" class="form-control" required>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">{{ __('Category (optional)') }}</label>
@@ -37,7 +60,7 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">{{ __('Country (optional)') }}</label>
+                        <label class="form-label">{{ __('Trend country (optional)') }}</label>
                         <input type="text" name="trend_country" class="form-control" placeholder="{{ __('e.g. US') }}">
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
@@ -53,7 +76,9 @@
                     <thead>
                         <tr>
                             <th>{{ __('Time') }}</th>
-                            <th>{{ __('Posts') }}</th>
+                            <th>{{ __('Trend') }}</th>
+                            <th>{{ __('Upcoming') }}</th>
+                            <th>{{ __('Evergreen') }}</th>
                             <th>{{ __('Category') }}</th>
                             <th>{{ __('Country') }}</th>
                             <th>{{ __('Status') }}</th>
@@ -71,8 +96,15 @@
                                 <td style="width:110px;">
                                     <input form="scheduleForm{{ $schedule->id }}" type="time" name="run_time" class="form-control form-control-sm" value="{{ $schedule->formattedTime() }}" required>
                                 </td>
-                                <td style="width:90px;">
-                                    <input form="scheduleForm{{ $schedule->id }}" type="number" name="post_count" min="1" max="20" class="form-control form-control-sm" value="{{ $schedule->post_count }}" required>
+                                @php($counts = $schedule->countsByType())
+                                <td style="width:80px;">
+                                    <input form="scheduleForm{{ $schedule->id }}" type="number" name="trend_count" min="0" max="20" class="form-control form-control-sm" value="{{ $counts['trend'] }}" required>
+                                </td>
+                                <td style="width:80px;">
+                                    <input form="scheduleForm{{ $schedule->id }}" type="number" name="upcoming_count" min="0" max="20" class="form-control form-control-sm" value="{{ $counts['upcoming'] }}" required>
+                                </td>
+                                <td style="width:80px;">
+                                    <input form="scheduleForm{{ $schedule->id }}" type="number" name="evergreen_count" min="0" max="20" class="form-control form-control-sm" value="{{ $counts['evergreen'] }}" required>
                                 </td>
                                 <td style="width:180px;">
                                     <select form="scheduleForm{{ $schedule->id }}" name="category_id" class="form-select form-select-sm">
@@ -111,7 +143,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center text-muted">{{ __('No time slots configured yet — the legacy single daily run time is being used.') }}</td>
+                                <td colspan="9" class="text-center text-muted">{{ __('No time slots configured yet — the legacy single daily run time is being used.') }}</td>
                             </tr>
                         @endforelse
                     </tbody>

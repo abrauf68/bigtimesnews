@@ -20,7 +20,7 @@ class ClaudeService
     /**
      * Step 1 (Claude Sonnet): research-grounded, SEO-optimized first draft.
      */
-    public function generateArticle(string $topic, string $context, string $country, array $categories = []): array
+    public function generateArticle(string $topic, string $context, string $country, array $categories = [], string $type = 'trend'): array
     {
         $countryLabel = $country === 'GLOBAL' || empty($country) ? 'a global, international audience' : "readers in {$country}";
 
@@ -31,14 +31,21 @@ Never use the em dash or en dash character in your writing (in the title, conten
 Always respond with ONLY a single valid JSON object. No markdown code fences, no commentary before or after.
 SYS;
 
+        $today = now()->timezone('America/New_York')->format('l, F j, Y');
+        $typeInstructions = $this->typeInstructions($type);
+
         $categoryList = !empty($categories) ? implode(', ', $categories) : 'US News, World News, Business, Sports, Entertainment, Technology, Health, Lifestyle';
 
         $user = <<<PROMPT
-Write a full, original, SEO-optimized blog post about this currently trending topic: "{$topic}"
+Write a full, original, SEO-optimized blog post about this topic: "{$topic}"
 
 Related context you can use for grounding (may be partial, verify tone rather than copying facts verbatim): "{$context}"
 
+Today's date (US Eastern): {$today}. Anything that happens after this date is in the future, so write about it in the future tense and never as if it already happened.
+
 Target audience: {$countryLabel}.
+
+{$typeInstructions}
 
 Available categories on this site (choose the single one that best fits this topic's actual subject matter, do not default to a generic one): {$categoryList}
 
@@ -163,6 +170,65 @@ PROMPT;
         $decoded = $this->parseJson($result, 'FAQ generation');
 
         return is_array($decoded['faqs'] ?? null) ? $decoded['faqs'] : [];
+    }
+
+    protected function typeInstructions(string $type): string
+    {
+        return match ($type) {
+            'upcoming' => <<<TXT
+Post type: UPCOMING DATE / EVENT guide for US readers.
+- The context contains a verified event date and verified facts. Use them exactly. Never change the date, never invent other dates, hours or policies.
+- Do NOT put a year (like 2026) in the title, slug or headings. You may state the full date once in the opening paragraph so readers can see when it happens.
+- Answer the reader's question in the first two sentences, then expand with practical detail, a short checklist and the table.
+- Where policies differ by bank, store, carrier or state, say so plainly and tell readers to check locally.
+TXT,
+            'evergreen' => <<<TXT
+Post type: EVERGREEN how-to / explainer for US readers.
+- Make it genuinely useful and specific: real steps, a checklist and a comparison or facts table. This must read as more helpful than a generic overview.
+- Do NOT put a year in the title, slug or headings so the post stays valid over time.
+- Give concrete numbers or fees only if you are certain; otherwise describe them generally and point readers to the official source (for example a .gov site or the provider's own page).
+- No medical, legal or investment advice.
+TXT,
+            default => <<<TXT
+Post type: TRENDING news explainer. Cover what is known, why people are searching for it and what to watch next, without inventing details beyond the given context.
+TXT,
+        };
+    }
+
+    /**
+     * Cheap QA-model call: suggest fresh evergreen topics when the built-in bank is used up.
+     *
+     * @return array<int, array{topic:string, context:string}>
+     */
+    public function suggestEvergreenTopics(int $count, array $existingTitles, string $month, bool $seasonalOnly = false): array
+    {
+        $count = max(1, min(30, $count + 5)); // ask for a few extra, some will be filtered as duplicates
+        $existing = implode("\n- ", array_slice($existingTitles, 0, 150));
+        $focus = $seasonalOnly
+            ? "Every topic must be seasonal and relevant to the next 4 to 8 weeks after {$month} for US readers."
+            : "Mix all-year topics with ones relevant to {$month} and the following month.";
+
+        $system = 'You are an SEO editor for a US news and lifestyle site. Always respond with ONLY a single valid JSON object, no markdown fences, no commentary. Never use em dashes or en dashes.';
+
+        $user = <<<PROMPT
+Suggest {$count} specific, long-tail EVERGREEN blog topics for US readers.
+
+Rules:
+- Each topic is a concrete question or how-to a real person searches (for example "How to renew a US passport: cost, processing time and steps").
+- {$focus}
+- US-specific and practical: consumer how-tos, travel, home, weather preparedness, tech, shipping, holidays and seasons, everyday money admin like replacing documents.
+- No medical, legal, investment or political advice. No celebrity or breaking news. No years in the topic.
+- Do not repeat or closely paraphrase any of these existing topics:
+- {$existing}
+
+Return ONLY this JSON:
+{"topics": [{"topic": "string, the working post topic", "context": "string, one sentence on what the post should cover"}]}
+PROMPT;
+
+        $result = $this->call($this->settings->claude_qa_model, $system, $user, 3000);
+        $decoded = $this->parseJson($result, 'evergreen topic suggestions');
+
+        return is_array($decoded['topics'] ?? null) ? $decoded['topics'] : [];
     }
 
     protected function call(string $model, string $system, string $userMessage, int $maxTokens): string

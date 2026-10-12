@@ -26,14 +26,24 @@ class AiBlogScheduleController extends Controller
 
         $request->validate([
             'run_time' => 'required|date_format:H:i',
-            'post_count' => 'required|integer|min:1|max:20',
+            'trend_count' => 'required|integer|min:0|max:20',
+            'upcoming_count' => 'required|integer|min:0|max:20',
+            'evergreen_count' => 'required|integer|min:0|max:20',
             'category_id' => 'nullable|exists:categories,id',
             'trend_country' => 'nullable|string|max:10',
         ]);
 
+        $total = (int) $request->trend_count + (int) $request->upcoming_count + (int) $request->evergreen_count;
+        if ($total < 1) {
+            return back()->withInput()->withErrors(['trend_count' => 'Add at least one post (trend, upcoming or evergreen) to the slot.']);
+        }
+
         AiBlogSchedule::create([
             'run_time' => $request->run_time . ':00',
-            'post_count' => $request->post_count,
+            'post_count' => $total,
+            'trend_count' => (int) $request->trend_count,
+            'upcoming_count' => (int) $request->upcoming_count,
+            'evergreen_count' => (int) $request->evergreen_count,
             'category_id' => $request->category_id ?: null,
             'trend_country' => $request->trend_country ?: null,
             'is_enabled' => true,
@@ -50,14 +60,24 @@ class AiBlogScheduleController extends Controller
 
         $request->validate([
             'run_time' => 'required|date_format:H:i',
-            'post_count' => 'required|integer|min:1|max:20',
+            'trend_count' => 'required|integer|min:0|max:20',
+            'upcoming_count' => 'required|integer|min:0|max:20',
+            'evergreen_count' => 'required|integer|min:0|max:20',
             'category_id' => 'nullable|exists:categories,id',
             'trend_country' => 'nullable|string|max:10',
         ]);
 
+        $total = (int) $request->trend_count + (int) $request->upcoming_count + (int) $request->evergreen_count;
+        if ($total < 1) {
+            return back()->withInput()->withErrors(['trend_count' => 'A slot needs at least one post. Use Disable or Remove instead.']);
+        }
+
         $schedule->update([
             'run_time' => $request->run_time . ':00',
-            'post_count' => $request->post_count,
+            'post_count' => $total,
+            'trend_count' => (int) $request->trend_count,
+            'upcoming_count' => (int) $request->upcoming_count,
+            'evergreen_count' => (int) $request->evergreen_count,
             'category_id' => $request->category_id ?: null,
             'trend_country' => $request->trend_country ?: null,
         ]);
