@@ -93,6 +93,105 @@ class UpcomingEventService
         return $out;
     }
 
+    /**
+     * Rows for the public "US Holiday Calendar" page: which days banks, the post office
+     * and the stock market are closed. Weekend holidays get the "observed" rules instead
+     * of a guess, and anything not certain says "check locally".
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function holidayCalendar(?Carbon $today = null, int $days = 420): array
+    {
+        $today = ($today ?? now())->copy()->startOfDay();
+        $to = $today->copy()->addDays($days);
+        $status = $this->statusMap();
+        $fixedDate = ['new_years_day', 'juneteenth', 'independence_day', 'veterans_day', 'christmas_day'];
+        $rows = [];
+
+        foreach ([$today->year, $today->year + 1, $today->year + 2] as $year) {
+            foreach ($this->definitions() as $def) {
+                if (!isset($status[$def['key']])) {
+                    continue;
+                }
+
+                $date = ($def['date'])($year);
+                if ($date->lt($today) || $date->gt($to)) {
+                    continue;
+                }
+
+                $isWeekend = in_array((int) $date->format('N'), [6, 7], true);
+                $row = [
+                    'key' => $def['key'] . '-' . $year,
+                    'name' => $def['name'] === 'the Fourth of July' ? 'Independence Day (Fourth of July)' : $def['name'],
+                    'date' => $date,
+                    'banks' => $status[$def['key']]['banks'],
+                    'post' => $status[$def['key']]['post'],
+                    'market' => $status[$def['key']]['market'],
+                    'note' => '',
+                ];
+
+                if ($def['key'] === 'christmas_eve') {
+                    $christmas = Carbon::create($year, 12, 25);
+                    if ($isWeekend) {
+                        continue; // nothing special on a weekend Christmas Eve
+                    }
+                    if ((int) $christmas->format('N') === 6) {
+                        // Christmas on Saturday: NYSE closes Friday Dec 24 for the observed holiday.
+                        $row['banks'] = $row['post'] = 'Check locally';
+                        $row['market'] = 'Closed (Christmas observed)';
+                        $row['note'] = 'Christmas Day falls on a Saturday, so the NYSE and Nasdaq are closed on Friday, December 24. Federal offices also observe Christmas on that Friday. Check your bank and USPS for their own hours.';
+                    }
+                } elseif (in_array($def['key'], $fixedDate, true) && $isWeekend) {
+                    $saturday = (int) $date->format('N') === 6;
+                    $observed = $date->copy()->addDays($saturday ? -1 : 1);
+
+                    if ($def['key'] === 'veterans_day') {
+                        $row['market'] = 'Open (the NYSE does not observe Veterans Day)';
+                        $nyse = 'open as usual';
+                    } elseif ($def['key'] === 'new_years_day' && $saturday) {
+                        $row['market'] = 'Open the Friday before';
+                        $nyse = 'open on ' . $observed->format('l, F j') . ' (the exchange does not close the Friday before a Saturday New Year\'s Day)';
+                    } else {
+                        $row['market'] = 'Closed on ' . $observed->format('D, M j');
+                        $nyse = 'closed on ' . $observed->format('l, F j');
+                    }
+
+                    $row['banks'] = $row['post'] = 'Check locally';
+                    $row['note'] = 'This holiday falls on a ' . $date->format('l') . '. Federal offices observe it on ' . $observed->format('l, F j') . '. The NYSE and Nasdaq are ' . $nyse . '. Banks and the Postal Service can differ, so check with them directly.';
+                }
+
+                $rows[] = $row;
+            }
+        }
+
+        usort($rows, fn ($a, $b) => $a['date']->timestamp <=> $b['date']->timestamp);
+
+        return $rows;
+    }
+
+    protected function statusMap(): array
+    {
+        $closed = ['banks' => 'Closed', 'post' => 'Closed (no mail delivery)', 'market' => 'Closed'];
+        $fedOnly = ['banks' => 'Closed (Federal Reserve holiday)', 'post' => 'Closed (no mail delivery)', 'market' => 'Open'];
+
+        return [
+            'new_years_day' => $closed,
+            'mlk_day' => $closed,
+            'presidents_day' => $closed,
+            'good_friday' => ['banks' => 'Open', 'post' => 'Open', 'market' => 'Closed'],
+            'memorial_day' => $closed,
+            'juneteenth' => $closed,
+            'independence_day' => $closed,
+            'labor_day' => $closed,
+            'columbus_day' => $fedOnly,
+            'veterans_day' => $fedOnly,
+            'thanksgiving' => $closed,
+            'black_friday' => ['banks' => 'Open', 'post' => 'Open', 'market' => 'Open, closes 1 p.m. ET'],
+            'christmas_eve' => ['banks' => 'Open, hours vary', 'post' => 'Open, hours vary', 'market' => 'Open, closes 1 p.m. ET'],
+            'christmas_day' => $closed,
+        ];
+    }
+
     protected function customEvents(Carbon $from, Carbon $to)
     {
         try {

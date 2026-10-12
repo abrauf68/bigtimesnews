@@ -23,6 +23,15 @@ class PageController extends Controller
         return view('frontend.pages.static.archive', compact('posts'));
     }
 
+    public function holidays()
+    {
+        $rows = \Illuminate\Support\Facades\Cache::remember('holiday:calendar:v1:' . now()->format('Y-m-d'), 3600 * 6, function () {
+            return app(\App\Services\AiBlog\UpcomingEventService::class)->holidayCalendar();
+        });
+
+        return view('frontend.pages.static.holidays', ['rows' => $rows]);
+    }
+
     public function about()
     {
         try {

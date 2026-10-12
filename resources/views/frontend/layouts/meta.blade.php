@@ -13,6 +13,7 @@
 @endif
 <meta name="robots" content="index, follow">
 <link rel="sitemap" type="application/xml" href="{{ route('sitemap.index') }}" />
+<link rel="alternate" type="application/rss+xml" title="{{ \App\Helpers\Helper::getCompanyName() }} RSS feed" href="{{ route('frontend.feed') }}" />
 
 <!-- Open Graph Tags -->
 <meta property="og:locale" content="en_US">

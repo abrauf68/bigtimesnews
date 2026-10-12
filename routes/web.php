@@ -266,6 +266,7 @@ Route::name('frontend.')->group(function () {
 
     // Crawlable, server-rendered list of every published article (plain <a> links + real pagination)
     Route::get('/archive', [PageController::class, 'archive'])->name('archive');
+    Route::get('/us-holiday-calendar', [PageController::class, 'holidays'])->name('holidays');
 
     // Static SEO pages: About, Contact, Privacy Policy, Terms of Service
     Route::get('/about', [PageController::class, 'about'])->name('about');
@@ -281,6 +282,7 @@ Route::name('frontend.')->group(function () {
 });
 
     // SEO sitemaps
+    Route::get('/feed.xml', [\App\Http\Controllers\Frontend\FeedController::class, 'index'])->name('feed');
     Route::get('/sitemap.xml', [\App\Http\Controllers\Frontend\SitemapController::class, 'index'])->name('sitemap.index');
     Route::get('/news-sitemap.xml', [\App\Http\Controllers\Frontend\SitemapController::class, 'news'])->name('sitemap.news');
 

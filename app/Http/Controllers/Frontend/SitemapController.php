@@ -41,6 +41,13 @@ class SitemapController extends Controller
                 'priority' => '0.8',
             ];
 
+            $urls[] = [
+                'loc' => route('frontend.holidays'),
+                'lastmod' => now()->toAtomString(),
+                'changefreq' => 'weekly',
+                'priority' => '0.8',
+            ];
+
             // Static SEO pages
             $staticPages = [
                 ['route' => 'frontend.about', 'changefreq' => 'monthly', 'priority' => '0.5'],

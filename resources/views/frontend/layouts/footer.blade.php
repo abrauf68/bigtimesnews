@@ -49,6 +49,8 @@
                              <li><a class="uc-link text-underline hover:text-gray-900 dark:hover:text-white duration-150"
                                      href="{{ route('frontend.archive') }}">All Articles</a></li>
                              <li><a class="uc-link text-underline hover:text-gray-900 dark:hover:text-white duration-150"
+                                     href="{{ route('frontend.holidays') }}">US Holidays</a></li>
+                             <li><a class="uc-link text-underline hover:text-gray-900 dark:hover:text-white duration-150"
                                      href="{{ route('frontend.about') }}">About Us</a></li>
                              <li><a class="uc-link text-underline hover:text-gray-900 dark:hover:text-white duration-150"
                                      href="{{ route('frontend.contact') }}">Contact</a></li>

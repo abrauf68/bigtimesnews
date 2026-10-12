@@ -79,6 +79,7 @@ class PostObserver
     {
         // Sitemap fresh rakhne ke liye
         Cache::forget('sitemap:main:urls');
+        Cache::forget('feed:main:xml');
 
         // Clear navbar latest posts
         Cache::forget('navbar_latest_posts');
