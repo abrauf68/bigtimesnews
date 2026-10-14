@@ -311,7 +311,7 @@
     <div class="panel mt-4 lg:mt-6 xl:mt-9">
         <div class="container max-w-lg">
             <div class="post-content panel fs-6 md:fs-5" data-uc-lightbox="animation: scale mb-2">
-                {!! $post->content !!}
+                {!! \App\Support\ImageAlt::fill($post->content, $post->title) !!}
                 <!-- Try these unicon variants -->
                 <div class="post-stats panel hstack justify-center gap-4 mt-2 mb-2">
                     <div class="hstack gap-2">

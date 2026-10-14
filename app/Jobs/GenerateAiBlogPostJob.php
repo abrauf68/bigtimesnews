@@ -87,6 +87,7 @@ class GenerateAiBlogPostJob implements ShouldQueue
             $inlineQueries = is_array($final['image_queries'] ?? null) ? $final['image_queries'] : [];
             $inlineImageUrls = $unsplash->fetchContentImages($inlineQueries, $slug);
             $content = $this->insertInlineImages($this->cleanText((string) ($final['content_html'] ?? '')), $inlineImageUrls);
+            $content = \App\Support\ImageAlt::fill($content, $title);
 
             $tags = $final['tags'] ?? [];
             if (!is_array($tags)) {
