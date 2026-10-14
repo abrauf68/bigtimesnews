@@ -79,7 +79,7 @@
                                                                         <div class="hstack gap-3">
                                                                             <div>
                                                                                 <div class="post-author hstack gap-1">
-                                                                                    <x-author-avatar :author="$post->author" :size="24" />
+                                                                                    @include('frontend.components.author-avatar', ['author' => $post->author, 'size' => 24])
                                                                                     @if($post->author)
                                                                                         <a href="{{ $post->author->url }}" class="text-white text-none fw-bold">{{ $post->author->name }}</a>
                                                                                     @else

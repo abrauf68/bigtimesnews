@@ -293,7 +293,7 @@
                     <h1 class="h4 sm:h2 lg:h1 xl:display-6">{{ $post->title }}</h1>
                     <div class="post-byline hstack justify-center gap-2 fs-6 opacity-70">
                         @if($post->author)
-                            <x-author-avatar :author="$post->author" :size="28" />
+                            @include('frontend.components.author-avatar', ['author' => $post->author, 'size' => 28])
                             <span>By <a href="{{ $post->author->url }}" rel="author" class="fw-bold text-none">{{ $post->author->name }}</a></span>
                         @endif
                         <time datetime="{{ optional($post->published_at ?? $post->created_at)->toAtomString() }}">{{ optional($post->published_at ?? $post->created_at)->format('M j, Y') }}</time>

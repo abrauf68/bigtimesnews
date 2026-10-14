@@ -30,7 +30,7 @@
 
 @section('page_body')
     <div style="display:flex;gap:1.25rem;align-items:flex-start;margin-bottom:1.5rem;">
-        <x-author-avatar :author="$author" :size="88" />
+        @include('frontend.components.author-avatar', ['author' => $author, 'size' => 88])
         <div>
             @if ($author->bio)
                 <p style="margin:0 0 .75rem;">{{ $author->bio }}</p>

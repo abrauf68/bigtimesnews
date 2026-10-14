@@ -1,5 +1,4 @@
-@props(['author', 'size' => 24])
-@php $px = (int) $size; @endphp
+@php $px = (int) ($size ?? 24); $author = $author ?? null; @endphp
 @if ($author && $author->photo_url)
     <img src="{{ $author->photo_url }}" alt="{{ $author->name }}" width="{{ $px }}" height="{{ $px }}"
         class="rounded-circle" style="width:{{ $px }}px;height:{{ $px }}px;object-fit:cover;" loading="lazy">
