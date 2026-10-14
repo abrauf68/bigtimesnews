@@ -6,7 +6,7 @@
             <div class="section-inner panel vstack gap-4">
                 <div class="section-content">
                     <div class="row child-col-12 lg:child-cols g-4 lg:g-6 col-match">
-                        <div class="lg:col-9">
+                        <div class="lg:col-12">
                             <div class="block-layout slider-layout swiper-parent uc-dark">
                                 <div class="block-content panel uc-visible-toggle">
                                     @if($featuredPosts->count() > 0)
@@ -29,7 +29,7 @@
                                                                         fetchpriority="high">
                                                                 @else
                                                                     <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                                                                        src="{{ asset('assets/img/blog/blog-default.png') }}"
+                                                                        src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                                                         data-src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                                                         alt="{{ $post->title }}"
                                                                         data-uc-img="loading: lazy">
@@ -44,7 +44,7 @@
                                                                         fetchpriority="high">
                                                                 @else
                                                                     <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                                                                        src="{{ asset('assets/img/blog/blog-default.png') }}"
+                                                                        src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                                                         data-src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                                                         alt="{{ $post->title }}"
                                                                         data-uc-img="loading: lazy">
@@ -79,18 +79,12 @@
                                                                         <div class="hstack gap-3">
                                                                             <div>
                                                                                 <div class="post-author hstack gap-1">
-                                                                                    @if($post->author && $post->author->image)
-                                                                                        <img src="{{ asset($post->author->image) }}"
-                                                                                            alt="{{ $post->author->name }}"
-                                                                                            class="w-24px h-24px rounded-circle">
+                                                                                    <x-author-avatar :author="$post->author" :size="24" />
+                                                                                    @if($post->author)
+                                                                                        <a href="{{ $post->author->url }}" class="text-white text-none fw-bold">{{ $post->author->name }}</a>
                                                                                     @else
-                                                                                        <img src="{{ asset('assets/img/default/user-default.webp') }}"
-                                                                                            class="w-24px h-24px rounded-circle"
-                                                                                            alt="Default User">
+                                                                                        <span class="text-white fw-bold">{{ \App\Helpers\Helper::getCompanyName() }}</span>
                                                                                     @endif
-                                                                                    <a href="{{ route('frontend.news.show', [$post->category->slug, $post->slug]) }}" class="text-white text-none fw-bold">
-                                                                                        {{ $post->author->name ?? 'Admin' }}
-                                                                                    </a>
                                                                                 </div>
                                                                             </div>
                                                                             <div class="hstack gap-2">
@@ -130,27 +124,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="lg:col-3">
-                            <div class="panel cstack gap-2 h-100">
-                                <div>
-                                    <div class="widget ad-widget vstack gap-2">
-                                        <div class="widget-title text-center">
-                                            <h5 class="fs-7 ft-tertiary text-uppercase m-0">Sponsor</h5>
-                                        </div>
-                                        <div class="widget-content">
-                                            <a class="cstack max-w-300px mx-auto text-none"
-                                                href="https://siteffects.com"
-                                                target="_blank" rel="nofollow">
-                                                <img class="d-none sm:d-block"
-                                                    src="{{ asset('front/images/common/ad-desktop.jpg') }}" alt="Ad slot">
-                                                <img class="d-block sm:d-none"
-                                                    src="{{ asset('front/images/common/ad-slot-mobile.jpg') }}" alt="Ad slot">
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        
                     </div>
                 </div>
             </div>

@@ -29,7 +29,7 @@
                                 </figure>
                                 <div class="featured-image bg-gray-25 dark:bg-gray-800">
                                     <canvas class="min-h-300px lg:min-h-500px"></canvas>
-                                    <img class="media-cover image" src="{{ asset('assets/img/blog/blog-default.png') }}" data-src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}" alt="Hidden Gems: Underrated Travel Destinations Around the World" data-uc-img="loading: lazy">
+                                    <img class="media-cover image" src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}" data-src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}" alt="Hidden Gems: Underrated Travel Destinations Around the World" data-uc-img="loading: lazy">
                                 </div>
                                 <div class="d-block position-cover bg-gradient-to-r from-black to-transparent z-1 opacity-60"></div>
                                 <div class="panel max-w-xl mx-auto px-2 z-3">
@@ -49,7 +49,7 @@
                                                         <div>
                                                             <div class="post-author hstack gap-1">
                                                                 <span>By</span>
-                                                                <a href="#" class="text-black dark:text-white text-none fw-bold">{{ $post->author ? $post->author->name : 'Unknown Author' }}</a>
+                                                                @if($post->author)<a href="{{ $post->author->url }}" class="text-black dark:text-white text-none fw-bold">{{ $post->author->name }}</a>@else<span class="fw-bold">{{ \App\Helpers\Helper::getCompanyName() }}</span>@endif
                                                             </div>
                                                         </div>
                                                         <div>
@@ -131,36 +131,14 @@
     <!-- Section end -->
 
     <!-- Section start -->
-    <div class="section panel overflow-hidden">
-        <div class="section-outer panel pt-5 lg:pt-8">
-            <div class="container max-w-xl">
-                <div class="section-inner">
-                    <a class="text-none" href="https://themeforest.net/user/reacthemes/portfolio" target="_blank" rel="nofollow">
-                        <img class="d-none md:d-block" src="{{ asset('front/images/common/ad-slot.jpg') }}" alt="Ad slot">
-                        <img class="d-block md:d-none" src="{{ asset('front/images/common/ad-slot-mobile.jpg') }}" alt="Ad slot">
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Section start -->
     @include('frontend.sections.category-posts')
     <!-- Section end -->
 
     <!-- Section start -->
-    <div class="section panel overflow-hidden">
-        <div class="section-outer panel pt-5 lg:pt-8">
-            <div class="container max-w-xl">
-                <div class="section-inner">
-                    <a class="text-none" href="https://themeforest.net/user/reacthemes/portfolio" target="_blank" rel="nofollow">
-                        <img class="d-none md:d-block" src="{{ asset('front/images/common/ad-slot-2.jpg') }}" alt="Ad slot">
-                        <img class="d-block md:d-none" src="{{ asset('front/images/common/ad-slot-mobile-2.jpg') }}" alt="Ad slot">
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+    
     <!-- Section start -->
     @include('frontend.components.crawl-links', ['links' => $latestLinks ?? collect(), 'heading' => 'Latest articles'])
 @endsection

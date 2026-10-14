@@ -3,7 +3,7 @@
     <div class="panel hstack justify-center w-100px h-100px">
         <figure class="featured-image m-0 ratio ratio-1x1 rounded uc-transition-toggle overflow-hidden bg-gray-25 dark:bg-gray-800">
             <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                src="{{ asset('assets/img/blog/blog-default.png') }}"
+                src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                 data-src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                 alt="{{ $post->title }}"
                 data-uc-img="loading: lazy">
@@ -24,7 +24,7 @@
     <div class="panel hstack justify-center w-100px h-100px">
         <figure class="featured-image m-0 ratio ratio-1x1 rounded uc-transition-toggle overflow-hidden bg-gray-25 dark:bg-gray-800">
             <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                src="{{ asset('assets/img/blog/blog-default.png') }}"
+                src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                 data-src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                 alt="{{ $post->title }}"
                 data-uc-img="loading: lazy">

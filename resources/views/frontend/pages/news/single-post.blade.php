@@ -24,7 +24,8 @@
             "dateModified": {!! json_encode(optional($post->updated_at)->toAtomString()) !!},
             "author": {
                 "@@type": "Person",
-                "name": {!! json_encode($post->author->name ?? \App\Helpers\Helper::getCompanyName()) !!}
+                "name": {!! json_encode($post->author->name ?? \App\Helpers\Helper::getCompanyName()) !!}@if($post->author),
+                "url": {!! json_encode($post->author->url) !!}@endif
             },
             "publisher": {
                 "@@type": "Organization",
@@ -290,6 +291,13 @@
             <div class="panel vstack gap-4 md:gap-6 xl:gap-8 text-center">
                 <div class="panel vstack items-center max-w-400px sm:max-w-500px xl:max-w-md mx-auto gap-2 md:gap-3">
                     <h1 class="h4 sm:h2 lg:h1 xl:display-6">{{ $post->title }}</h1>
+                    <div class="post-byline hstack justify-center gap-2 fs-6 opacity-70">
+                        @if($post->author)
+                            <x-author-avatar :author="$post->author" :size="28" />
+                            <span>By <a href="{{ $post->author->url }}" rel="author" class="fw-bold text-none">{{ $post->author->name }}</a></span>
+                        @endif
+                        <time datetime="{{ optional($post->published_at ?? $post->created_at)->toAtomString() }}">{{ optional($post->published_at ?? $post->created_at)->format('M j, Y') }}</time>
+                    </div>
                     <ul class="post-share-icons nav-x gap-1 dark:text-white">
                         <li><a class="btn btn-md p-0 border-gray-900 border-opacity-15 w-32px lg:w-48px h-32px lg:h-48px text-dark dark:text-white dark:border-white hover:bg-primary hover:border-primary hover:text-white rounded-circle" href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->fullUrl()) }}"><i class="unicon-logo-facebook icon-1"></i></a></li>
                         <li><a class="btn btn-md p-0 border-gray-900 border-opacity-15 w-32px lg:w-48px h-32px lg:h-48px text-dark dark:text-white dark:border-white hover:bg-primary hover:border-primary hover:text-white rounded-circle" href="https://twitter.com/intent/tweet?text={{ urlencode($post->title) }}&url={{ urlencode(request()->fullUrl()) }}"><i class="unicon-logo-x-filled icon-1"></i></a></li>

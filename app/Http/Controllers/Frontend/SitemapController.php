@@ -48,6 +48,15 @@ class SitemapController extends Controller
                 'priority' => '0.8',
             ];
 
+            foreach (\App\Models\Author::where('is_active', 'active')->whereHas('posts', fn ($q) => $q->where('status', 'published'))->get() as $author) {
+                $urls[] = [
+                    'loc' => $author->url,
+                    'lastmod' => optional($author->updated_at)->toAtomString() ?? now()->toAtomString(),
+                    'changefreq' => 'weekly',
+                    'priority' => '0.4',
+                ];
+            }
+
             // Static SEO pages
             $staticPages = [
                 ['route' => 'frontend.about', 'changefreq' => 'monthly', 'priority' => '0.5'],

@@ -5,7 +5,7 @@
         <article class="post type-post panel vstack gap-2">
             <figure class="featured-image m-0 ratio ratio-4x3 rounded uc-transition-toggle overflow-hidden bg-gray-25 dark:bg-gray-800">
                 <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                    src="{{ asset('assets/img/blog/blog-default.png') }}"
+                    src="{{ $relatedPost->main_image ? asset($relatedPost->main_image) : asset('assets/img/blog/blog-default.png') }}"
                     data-src="{{ $relatedPost->main_image ? asset($relatedPost->main_image) : asset('assets/img/blog/blog-default.png') }}"
                     alt="{{ $relatedPost->title }}"
                     data-uc-img="loading: lazy">

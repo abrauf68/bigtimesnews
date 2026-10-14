@@ -51,19 +51,8 @@
                         <!-- Remove data-uc-sticky and use custom CSS -->
                         <div class="sidebar-wrap panel vstack gap-2 pb-2">
 
-                            <!-- Ad Widget -->
-                            <div class="widget ad-widget vstack gap-2 text-center p-2 border">
-                                <div class="widgt-content">
-                                    <a class="cstack max-w-300px mx-auto text-none"
-                                        href="https://themeforest.net/user/reacthemes/portfolio" target="_blank"
-                                        rel="nofollow">
-                                        <img class="d-block dark:d-none"
-                                            src="{{ asset('front/images/common/ad-slot-aside.jpg') }}" alt="Ad slot">
-                                        <img class="d-none dark:d-block"
-                                            src="{{ asset('front/images/common/ad-slot-aside-2.jpg') }}" alt="Ad slot">
-                                    </a>
-                                </div>
-                            </div>
+                            
+                            
 
                             <!-- Popular Now Widget -->
                             <div class="widget popular-widget vstack gap-2 p-2 border">
@@ -90,7 +79,7 @@
                             <!-- Social Widget -->
                             <div class="widget social-widget vstack gap-2 text-center p-2 border">
                                 <div class="widgt-title">
-                                    <h4 class="fs-7 ft-tertiary text-uppercase m-0">Follow @News5</h4>
+                                    <h4 class="fs-7 ft-tertiary text-uppercase m-0">Follow {{ \App\Helpers\Helper::getCompanyName() }}</h4>
                                 </div>
                                 <div class="widgt-content">
                                     <form id="newsletterForm" class="vstack gap-1">

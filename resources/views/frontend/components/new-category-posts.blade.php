@@ -9,7 +9,7 @@
                     <div class="post-media panel uc-transition-toggle overflow-hidden">
                         <div class="featured-image bg-gray-25 dark:bg-gray-800 overflow-hidden ratio ratio-16x9">
                             <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                                 src="{{ asset('assets/images/common/img-fallback.png') }}"
+                                 src="{{ $firstPost->main_image ? asset($firstPost->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                  data-src="{{ $firstPost->main_image ? asset($firstPost->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                  alt="{{ $firstPost->title }}"
                                  data-uc-img="loading: lazy">
@@ -48,14 +48,10 @@
                                 <div class="hstack gap-2">
                                     <div>
                                         <div class="post-author hstack gap-1">
-                                            @if($firstPost->author && $firstPost->author->avatar)
-                                            <a href="#" data-uc-tooltip="{{ $firstPost->author->name }}">
-                                                <img src="{{ asset($firstPost->author->avatar) }}" alt="{{ $firstPost->author->name }}" class="w-24px h-24px rounded-circle">
-                                            </a>
+                                            @if($firstPost->author)
+                                            <x-author-avatar :author="$firstPost->author" :size="24" />
+                                            <a href="{{ $firstPost->author->url }}" class="text-black dark:text-white text-none fw-bold">{{ $firstPost->author->name }}</a>
                                             @endif
-                                            <a href="#" class="text-black dark:text-white text-none fw-bold">
-                                                {{ $firstPost->author->name ?? 'Unknown Author' }}
-                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -80,7 +76,7 @@
                                 <div class="post-media panel uc-transition-toggle overflow-hidden max-w-150px min-w-100px lg:min-w-150px">
                                     <div class="featured-image bg-gray-25 dark:bg-gray-800 ratio ratio-16x9">
                                         <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                                             src="{{ asset('assets/images/common/img-fallback.png') }}"
+                                             src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                              data-src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                              alt="{{ $post->title }}"
                                              data-uc-img="loading: lazy">

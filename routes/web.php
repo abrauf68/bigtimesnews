@@ -267,6 +267,7 @@ Route::name('frontend.')->group(function () {
     // Crawlable, server-rendered list of every published article (plain <a> links + real pagination)
     Route::get('/archive', [PageController::class, 'archive'])->name('archive');
     Route::get('/us-holiday-calendar', [PageController::class, 'holidays'])->name('holidays');
+    Route::get('/author/{id}/{slug?}', [\App\Http\Controllers\Frontend\AuthorController::class, 'show'])->whereNumber('id')->name('author');
 
     // Static SEO pages: About, Contact, Privacy Policy, Terms of Service
     Route::get('/about', [PageController::class, 'about'])->name('about');

@@ -27,7 +27,7 @@
         <header class="uc-offcanvas-header hstack justify-between items-center pb-4 bg-white dark:bg-gray-900">
             <div class="uc-logo">
                 <a href="{{ route('frontend.home') }}" class="h5 text-none text-gray-900 dark:text-white">
-                    {{-- <img class="h-40px" src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}" alt="News5" data-uc-svg> --}}
+                    {{-- <img class="h-40px" src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}" alt="{{ \App\Helpers\Helper::getCompanyName() }}" data-uc-svg> --}}
                     <img class="logo-light h-40px" src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}"
                         alt="Logo Light">
 
@@ -562,7 +562,7 @@
                         <div class="uc-logo d-block md:d-none">
                             <a href="{{ route('frontend.home') }}">
                                 {{-- <img class="w-100px text-dark dark:text-white"
-                                    src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}" alt="News5" data-uc-svg> --}}
+                                    src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}" alt="{{ \App\Helpers\Helper::getCompanyName() }}" data-uc-svg> --}}
 
                                 <img class="logo-light w-100px text-dark dark:text-white"
                                     src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}" alt="Logo Light">
@@ -577,7 +577,7 @@
                         <div class="uc-logo d-none md:d-block">
                             <a href="{{ route('frontend.home') }}">
                                 {{-- <img class="w-150px text-dark dark:text-white"
-                                    src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}" alt="News5" data-uc-svg> --}}
+                                    src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}" alt="{{ \App\Helpers\Helper::getCompanyName() }}" data-uc-svg> --}}
 
                                 <img class="logo-light w-150px text-dark dark:text-white"
                                     src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}" alt="Logo Light">

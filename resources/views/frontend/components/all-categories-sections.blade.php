@@ -38,7 +38,7 @@
                                                 <div class="post-media panel overflow-hidden h-100">
                                                     <div class="featured-image bg-gray-25 dark:bg-gray-800 h-100 d-none md:d-block">
                                                         <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                                                            src="{{ asset('assets/img/blog/blog-default.png') }}"
+                                                            src="{{ $featuredPost->main_image ? asset($featuredPost->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                                             data-src="{{ $featuredPost->main_image ? asset($featuredPost->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                                             alt="{{ $featuredPost->title }}"
                                                             data-uc-img="loading: lazy"
@@ -46,7 +46,7 @@
                                                     </div>
                                                     <div class="featured-image bg-gray-25 dark:bg-gray-800 ratio ratio-16x9 d-block md:d-none">
                                                         <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                                                            src="{{ asset('assets/img/blog/blog-default.png') }}"
+                                                            src="{{ $featuredPost->main_image ? asset($featuredPost->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                                             data-src="{{ $featuredPost->main_image ? asset($featuredPost->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                                             alt="{{ $featuredPost->title }}"
                                                             data-uc-img="loading: lazy">
@@ -106,7 +106,7 @@
                                                             <div class="post-media panel overflow-hidden max-w-72px min-w-72px">
                                                                 <div class="featured-image bg-gray-25 dark:bg-gray-800 ratio ratio-1x1">
                                                                     <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                                                                        src="{{ asset('assets/img/blog/blog-default.png') }}"
+                                                                        src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                                                         data-src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                                                         alt="{{ $post->title }}"
                                                                         data-uc-img="loading: lazy">
@@ -162,7 +162,7 @@
                                                     <div class="post-media panel overflow-hidden max-w-72px min-w-72px">
                                                         <div class="featured-image bg-gray-25 dark:bg-gray-800 ratio ratio-1x1">
                                                             <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                                                                src="{{ asset('assets/img/blog/blog-default.png') }}"
+                                                                src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                                                 data-src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                                                 alt="{{ $post->title }}"
                                                                 data-uc-img="loading: lazy">
@@ -214,7 +214,7 @@
                                             <div class="post-media panel overflow-hidden">
                                                 <div class="featured-image bg-gray-25 dark:bg-gray-800 ratio ratio-4x3">
                                                     <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                                                        src="{{ asset('assets/img/blog/blog-default.png') }}"
+                                                        src="{{ $firstPost->main_image ? asset($firstPost->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                                         data-src="{{ $firstPost->main_image ? asset($firstPost->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                                         alt="{{ $firstPost->title }}"
                                                         data-uc-img="loading: lazy">
@@ -271,7 +271,7 @@
                                                     <div class="post-media panel overflow-hidden max-w-72px min-w-72px">
                                                         <div class="featured-image bg-gray-25 dark:bg-gray-800 ratio ratio-1x1">
                                                             <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                                                                src="{{ asset('assets/img/blog/blog-default.png') }}"
+                                                                src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                                                 data-src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                                                 alt="{{ $post->title }}"
                                                                 data-uc-img="loading: lazy">

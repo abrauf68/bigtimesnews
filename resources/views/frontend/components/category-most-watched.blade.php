@@ -29,7 +29,7 @@
                     <div class="post-media panel uc-transition-toggle overflow-hidden max-w-72px min-w-64px lg:min-w-72px">
                         <div class="featured-image bg-gray-25 dark:bg-gray-800 ratio ratio-1x1">
                             <img class="media-cover image"
-                                 src="{{ asset('assets/img/blog/blog-default.png') }}"
+                                 src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                  data-src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                                  alt="{{ $post->title }}"
                                  data-uc-img="loading: lazy">

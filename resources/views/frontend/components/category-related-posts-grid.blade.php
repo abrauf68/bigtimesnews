@@ -5,7 +5,7 @@
             <div class="post-media panel uc-transition-toggle overflow-hidden">
                 <div class="featured-image uc-transition-scale-up uc-transition-opaque bg-gray-25 dark:bg-gray-800 ratio ratio-16x9">
                     <img class="media-cover image"
-                         src="{{ asset('assets/img/blog/blog-default.png') }}"
+                         src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                          data-src="{{ $post->main_image ? asset($post->main_image) : asset('assets/img/blog/blog-default.png') }}"
                          alt="{{ $post->title }}"
                          data-uc-img="loading: lazy">
