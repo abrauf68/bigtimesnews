@@ -14,6 +14,7 @@ use App\Models\SocialPostTarget;
 use App\Mail\SocialAccountUnhealthyMail;
 use App\Models\AiBlogSetting;
 use App\Support\Social\ImageSuitabilityChecker;
+use App\Support\Social\OAuthClientManager;
 use App\Support\Social\SocialPublisherManager;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -26,6 +27,7 @@ class SocialPublishingService
         protected CaptionGeneratorContract $captionGenerator,
         protected SocialPublisherManager $publisherManager,
         protected ImageSuitabilityChecker $imageChecker,
+        protected OAuthClientManager $oauthManager,
     ) {
     }
 
@@ -153,6 +155,13 @@ class SocialPublishingService
             return;
         }
 
+        // Tokens such as Tumblr's expire within ~45 minutes. Refresh just before use, and
+        // give an account marked unhealthy a chance to heal itself before skipping it.
+        if (!empty($account->refresh_token) && ($account->isTokenExpiringSoon(10) || !$account->isHealthy())) {
+            $this->refreshAccountToken($account);
+            $account->refresh();
+        }
+
         if (!$account->isHealthy()) {
             $target->update(['status' => 'skipped', 'skip_reason' => $platform->label() . ' account is unhealthy. Reconnect it from the admin panel.']);
             return;
@@ -186,7 +195,16 @@ class SocialPublishingService
         ]);
 
         try {
-            $result = $this->publisherManager->driverFor($platform)->publish($target, $post, $account);
+            try {
+                $result = $this->publisherManager->driverFor($platform)->publish($target, $post, $account);
+            } catch (InvalidTokenSocialException $e) {
+                // The token may simply have expired: refresh it and retry once before giving up.
+                if (empty($account->refresh_token) || !$this->refreshAccountToken($account)) {
+                    throw $e;
+                }
+                $account->refresh();
+                $result = $this->publisherManager->driverFor($platform)->publish($target, $post, $account);
+            }
 
             $target->update([
                 'status' => 'posted',
@@ -212,6 +230,38 @@ class SocialPublishingService
                 'error' => $e->getMessage(),
             ]);
             throw $e;
+        }
+    }
+
+    /**
+     * Refresh an account's access token. Returns true when the account is healthy afterwards.
+     */
+    protected function refreshAccountToken(SocialPlatformAccount $account): bool
+    {
+        try {
+            $result = $this->oauthManager->forPlatform($account->platformEnum())->refresh($account->refresh_token);
+
+            if (empty($result['access_token'])) {
+                return false;
+            }
+
+            $account->update([
+                'access_token' => $result['access_token'],
+                'refresh_token' => $result['refresh_token'] ?? $account->refresh_token,
+                'token_expires_at' => !empty($result['expires_in']) ? now()->addSeconds((int) $result['expires_in']) : $account->token_expires_at,
+                'health' => 'healthy',
+                'health_message' => null,
+                'last_checked_at' => now(),
+            ]);
+
+            return true;
+        } catch (Throwable $e) {
+            Log::warning('Social token refresh before publish failed', [
+                'platform' => $account->platform,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
         }
     }
 

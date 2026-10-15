@@ -37,7 +37,7 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping();
 
         $schedule->command('social:refresh-tokens')
-            ->hourly()
+            ->everyTenMinutes()
             ->withoutOverlapping();
     }
 

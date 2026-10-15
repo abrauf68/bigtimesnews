@@ -21,7 +21,7 @@ class RefreshSocialTokens extends Command
         $accounts = SocialPlatformAccount::where('status', 'connected')
             ->whereNotNull('refresh_token')
             ->whereNotNull('token_expires_at')
-            ->where('token_expires_at', '<=', now()->addHours(24))
+            ->where('token_expires_at', '<=', now()->addMinutes(20))
             ->get();
 
         foreach ($accounts as $account) {
