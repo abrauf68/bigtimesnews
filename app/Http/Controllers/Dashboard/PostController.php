@@ -34,6 +34,29 @@ class PostController extends Controller
         }
     }
 
+    public function exportIndexing()
+    {
+        $this->authorize('view post');
+
+        $rows = Post::with('category:id,slug')
+            ->where('status', 'published')
+            ->whereHas('category')
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
+            ->get(['id', 'slug', 'category_id', 'published_at', 'created_at'])
+            ->map(fn ($p) => [
+                'url' => route('frontend.news.show', [$p->category->slug, $p->slug]),
+                'date' => optional($p->published_at ?? $p->created_at)->format('Y-m-d H:i'),
+            ])
+            ->all();
+
+        $file = \App\Support\IndexingSheet::build($rows);
+
+        return response()->download($file, 'indexing-tracker-' . now()->format('Y-m-d') . '.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
     public function getPostsData()
     {
         try {

@@ -200,6 +200,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('authors/status/{id}', [AuthorController::class, 'updateStatus'])->name('authors.status.update');
 
             //posts
+            Route::get('posts/export/indexing', [PostController::class, 'exportIndexing'])->name('posts.export.indexing');
             Route::resource('posts', PostController::class);
             Route::get('posts/status/{id}', [PostController::class, 'updateStatus'])->name('posts.status.update');
 

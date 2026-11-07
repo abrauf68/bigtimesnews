@@ -34,6 +34,12 @@
                         <span class="d-none d-sm-inline-block">{{ __('Add New Post') }}</span>
                     </a>
                 @endcan
+                @canany(['view post'])
+                    <a href="{{ route('dashboard.posts.export.indexing') }}" class="btn btn-outline-primary waves-effect ms-2">
+                        <i class="ti ti-download me-0 me-sm-1 ti-xs"></i>
+                        <span class="d-none d-sm-inline-block">{{ __('Download Indexing Sheet') }}</span>
+                    </a>
+                @endcan
             </div>
             <div class="card-datatable table-responsive">
                 <table class="datatables-posts table border-top" id="posts-table">
