@@ -107,6 +107,9 @@
                                 <td class="small text-nowrap">{{ $u->inspected_at ? $u->inspected_at->diffForHumans() : '-' }}</td>
                                 <td><span class="badge bg-label-secondary">{{ $u->source }}</span></td>
                                 <td class="text-end text-nowrap">
+                                    @if ($u->status !== 'indexed')
+                                        <a href="{{ $u->searchConsoleLink() }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success" title="{{ __('Opens Google Search Console. Click "Request indexing" there.') }}">{{ __('Request') }} <i class="ti ti-external-link ti-xs"></i></a>
+                                    @endif
                                     @can('update setting')
                                         <button type="submit" form="inspect-{{ $u->id }}" class="btn btn-sm btn-outline-primary">{{ __('Inspect') }}</button>
                                     @endcan
