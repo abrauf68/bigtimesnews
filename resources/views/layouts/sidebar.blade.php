@@ -110,6 +110,14 @@
             </li>
         @endcan
         @can(['view setting'])
+            <li class="menu-item {{ request()->routeIs('dashboard.google_indexing.*') ? 'active' : '' }}">
+                <a href="{{ route('dashboard.google_indexing.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-brand-google"></i>
+                    <div>{{ __('Google Indexing') }}</div>
+                </a>
+            </li>
+        @endcan
+        @can(['view setting'])
             <li class="menu-item {{ request()->routeIs('dashboard.social.*') ? 'active' : '' }}">
                 <a href="{{ route('dashboard.social.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons ti ti-share"></i>

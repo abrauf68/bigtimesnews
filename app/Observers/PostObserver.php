@@ -73,6 +73,9 @@ class PostObserver
         dispatch(function () use ($post) {
             \App\Services\IndexNowService::submitPost($post->fresh(['category']) ?? $post);
         })->afterResponse();
+
+        // Google Indexing module: register the new URL (inspection runs on the queue).
+        \App\Services\GoogleIndexing\PostDiscovery::postPublished($post);
     }
 
     private function clearPostCaches(): void

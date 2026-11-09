@@ -223,6 +223,37 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::delete('/reply/{reply}', [CommentController::class, 'deleteReply'])->name('reply.delete');
             });
 
+            // Google Indexing module
+            Route::prefix('google-indexing')->name('google_indexing.')->group(function () {
+                $ns = '\\App\\Http\\Controllers\\Dashboard\\GoogleIndexing\\';
+
+                Route::get('/', [$ns . 'SiteController', 'index'])->name('index');
+                Route::get('/logs', [$ns . 'LogController', 'index'])->name('logs');
+
+                Route::get('/oauth/callback', [$ns . 'OAuthController', 'callback'])->name('oauth.callback');
+
+                Route::get('/sites/create', [$ns . 'SiteController', 'create'])->name('sites.create');
+                Route::post('/sites', [$ns . 'SiteController', 'store'])->name('sites.store');
+                Route::get('/sites/{site}', [$ns . 'SiteController', 'show'])->name('sites.show');
+                Route::get('/sites/{site}/edit', [$ns . 'SiteController', 'edit'])->name('sites.edit');
+                Route::put('/sites/{site}', [$ns . 'SiteController', 'update'])->name('sites.update');
+                Route::delete('/sites/{site}', [$ns . 'SiteController', 'destroy'])->name('sites.destroy');
+                Route::post('/sites/{site}/toggle', [$ns . 'SiteController', 'toggle'])->name('sites.toggle');
+                Route::post('/sites/{site}/sync-sitemap', [$ns . 'SiteController', 'syncSitemap'])->name('sites.sync_sitemap');
+                Route::post('/sites/{site}/submit-sitemap', [$ns . 'SiteController', 'submitSitemap'])->name('sites.submit_sitemap');
+                Route::post('/sites/{site}/run-batch', [$ns . 'SiteController', 'runBatch'])->name('sites.run_batch');
+
+                Route::get('/sites/{site}/connect', [$ns . 'OAuthController', 'connect'])->name('sites.connect');
+                Route::post('/sites/{site}/disconnect', [$ns . 'OAuthController', 'disconnect'])->name('sites.disconnect');
+
+                Route::get('/sites/{site}/urls', [$ns . 'UrlController', 'index'])->name('urls.index');
+                Route::post('/sites/{site}/urls', [$ns . 'UrlController', 'store'])->name('urls.store');
+                Route::get('/sites/{site}/urls/export', [$ns . 'UrlController', 'export'])->name('urls.export');
+                Route::post('/sites/{site}/urls/bulk', [$ns . 'UrlController', 'bulk'])->name('urls.bulk');
+                Route::post('/sites/{site}/urls/{url}/inspect', [$ns . 'UrlController', 'inspect'])->name('urls.inspect');
+                Route::delete('/sites/{site}/urls/{url}', [$ns . 'UrlController', 'destroy'])->name('urls.destroy');
+            });
+
             Route::prefix('social')->name('social.')->group(function () {
                 Route::get('/', [SocialAccountController::class, 'index'])->name('index');
                 Route::get('/connect/{platform}', [SocialAccountController::class, 'connect'])->name('connect');

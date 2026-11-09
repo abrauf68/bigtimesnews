@@ -36,6 +36,19 @@ class Kernel extends ConsoleKernel
             ->everyFiveMinutes()
             ->withoutOverlapping();
 
+        // --- Google Indexing module -------------------------------------------
+        // Runs each site's daily batch once its batch time has passed (the command guards "once per day").
+        $schedule->command('google-indexing:tick')
+            ->everyFiveMinutes()
+            ->withoutOverlapping();
+
+        // Discovers new URLs from each site's sitemap.
+        $schedule->command('google-indexing:sync-sitemaps')
+            ->hourly()
+            ->withoutOverlapping();
+
+        $schedule->command('google-indexing:prune')->dailyAt('04:30');
+
         $schedule->command('social:refresh-tokens')
             ->everyTenMinutes()
             ->withoutOverlapping();
