@@ -11,10 +11,10 @@ use ZipArchive;
  */
 class IndexingSheet
 {
-    public const STATUSES = ['Indexed', 'Not Indexed', 'Pending'];
+    public const STATUSES = ['Indexed', 'Not Indexed', 'Requested Index', 'Error Indexing'];
 
     /**
-     * @param array<int, array{url:string, date:string}> $rows
+     * @param array<int, array{url:string, date:string, status?:string, details?:string}> $rows
      * @return string path to a temporary .xlsx file
      */
     public static function build(array $rows): string
@@ -70,11 +70,11 @@ class IndexingSheet
             . '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
             . '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'
             . '<cols><col min="1" max="1" width="70" customWidth="1"/><col min="2" max="2" width="20" customWidth="1"/>'
-            . '<col min="3" max="3" width="16" customWidth="1"/><col min="4" max="4" width="45" customWidth="1"/></cols>'
+            . '<col min="3" max="3" width="18" customWidth="1"/><col min="4" max="4" width="34" customWidth="1"/><col min="5" max="5" width="45" customWidth="1"/></cols>'
             . '<sheetData>';
 
         $xml .= '<row r="1" ht="24" customHeight="1">';
-        foreach (['Post Link', 'Post Date & Time', 'Indexing Status', 'Screenshot'] as $i => $h) {
+        foreach (['Post Link', 'Upload Date & Time', 'Indexing Status', 'Google Details', 'Screenshot'] as $i => $h) {
             $xml .= '<c r="' . chr(65 + $i) . '1" t="inlineStr" s="1"><is><t>' . $e($h) . '</t></is></c>';
         }
         $xml .= '</row>';
@@ -83,11 +83,14 @@ class IndexingSheet
             $n = $i + 2;
             $url = $e($r['url']);
             // Row is tall enough to paste a screenshot into the last column.
+            $status = (string) ($r['status'] ?? '');
+            $details = (string) ($r['details'] ?? '');
             $xml .= '<row r="' . $n . '" ht="90" customHeight="1">'
                 . '<c r="A' . $n . '" t="str" s="2"><f>HYPERLINK("' . str_replace('"', '""', $url) . '")</f><v>' . $url . '</v></c>'
                 . '<c r="B' . $n . '" t="inlineStr" s="2"><is><t>' . $e($r['date']) . '</t></is></c>'
-                . '<c r="C' . $n . '" t="inlineStr" s="2"><is><t>Pending</t></is></c>'
-                . '<c r="D' . $n . '" s="2"/>'
+                . ($status !== '' ? '<c r="C' . $n . '" t="inlineStr" s="2"><is><t>' . $e($status) . '</t></is></c>' : '<c r="C' . $n . '" s="2"/>')
+                . ($details !== '' ? '<c r="D' . $n . '" t="inlineStr" s="2"><is><t>' . $e($details) . '</t></is></c>' : '<c r="D' . $n . '" s="2"/>')
+                . '<c r="E' . $n . '" s="2"/>'
                 . '</row>';
         }
 

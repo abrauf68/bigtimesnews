@@ -38,17 +38,44 @@ class PostController extends Controller
     {
         $this->authorize('view post');
 
-        $rows = Post::with('category:id,slug')
+        $posts = Post::with('category:id,slug')
             ->where('status', 'published')
             ->whereHas('category')
-            ->orderByDesc('published_at')
+            ->orderByRaw('COALESCE(published_at, created_at) DESC')
             ->orderByDesc('id')
-            ->get(['id', 'slug', 'category_id', 'published_at', 'created_at'])
-            ->map(fn ($p) => [
-                'url' => route('frontend.news.show', [$p->category->slug, $p->slug]),
-                'date' => optional($p->published_at ?? $p->created_at)->format('Y-m-d H:i'),
-            ])
-            ->all();
+            ->get(['id', 'slug', 'category_id', 'published_at', 'created_at']);
+
+        $items = $posts->map(fn ($p) => [
+            'url' => route('frontend.news.show', [$p->category->slug, $p->slug]),
+            'date' => optional($p->published_at ?? $p->created_at)->format('Y-m-d H:i'),
+        ]);
+
+        // Status comes from the Google Indexing module (URL Inspection results), matched by URL.
+        $known = [];
+        foreach ($items->chunk(500) as $chunk) {
+            $hashes = $chunk->map(fn ($i) => \App\Models\IndexingUrl::hashUrl(\App\Services\GoogleIndexing\UrlRegistrar::normalize($i['url']) ?? $i['url']))->all();
+            foreach (\App\Models\IndexingUrl::whereIn('url_hash', $hashes)->get(['url_hash', 'status', 'coverage_state', 'last_error', 'inspect_count']) as $row) {
+                $known[$row->url_hash] = $row;
+            }
+        }
+
+        $rows = $items->map(function ($i) use ($known) {
+            $hash = \App\Models\IndexingUrl::hashUrl(\App\Services\GoogleIndexing\UrlRegistrar::normalize($i['url']) ?? $i['url']);
+            $r = $known[$hash] ?? null;
+            $status = '';
+            $details = '';
+            if ($r && $r->inspect_count > 0 || ($r && $r->status === 'error')) {
+                $status = match ($r->status) {
+                    'indexed' => 'Indexed',
+                    'not_indexed' => 'Not Indexed',
+                    'error' => 'Error Indexing',
+                    default => '',
+                };
+                $details = $r->status === 'error' ? \Illuminate\Support\Str::limit((string) $r->last_error, 120) : (string) $r->coverage_state;
+            }
+
+            return $i + ['status' => $status, 'details' => $details];
+        })->all();
 
         $file = \App\Support\IndexingSheet::build($rows);
 
