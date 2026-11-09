@@ -108,7 +108,7 @@
                                 <td><span class="badge bg-label-secondary">{{ $u->source }}</span></td>
                                 <td class="text-end text-nowrap">
                                     @if ($u->status !== 'indexed')
-                                        <a href="{{ $u->searchConsoleLink() }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success" title="{{ __('Opens Google Search Console. Click "Request indexing" there.') }}">{{ __('Request') }} <i class="ti ti-external-link ti-xs"></i></a>
+                                        <a href="{{ $u->searchConsoleLink() }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success gi-request" data-url="{{ $u->url }}" title="{{ __('Copies the URL and opens Search Console. Paste it in the top search bar, then click Request indexing.') }}">{{ __('Request') }} <i class="ti ti-external-link ti-xs"></i></a>
                                     @endif
                                     @can('update setting')
                                         <button type="submit" form="inspect-{{ $u->id }}" class="btn btn-sm btn-outline-primary">{{ __('Inspect') }}</button>
@@ -147,6 +147,12 @@
 
 @section('script')
     <script>
+        // Copy the URL so it can be pasted into Search Console's inspection bar.
+        document.querySelectorAll('.gi-request').forEach(function (a) {
+            a.addEventListener('click', function () {
+                try { navigator.clipboard.writeText(a.dataset.url); } catch (e) {}
+            });
+        });
         document.getElementById('checkAll')?.addEventListener('change', function () {
             document.querySelectorAll('.row-check').forEach(function (c) { c.checked = this.checked; }, this);
         });

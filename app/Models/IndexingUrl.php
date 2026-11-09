@@ -39,13 +39,10 @@ class IndexingUrl extends Model
         return sha1($url);
     }
 
-    /** Opens Google's own URL Inspection page for this URL, where "Request indexing" is a manual button. */
+    /** Search Console home for this site's property. Google does not publish a deep link that pre-fills the inspected URL. */
     public function searchConsoleLink(): string
     {
-        return 'https://search.google.com/search-console/inspect?' . http_build_query([
-            'resource_id' => $this->site?->property_url,
-            'id' => $this->url,
-        ]);
+        return 'https://search.google.com/search-console?' . http_build_query(['resource_id' => $this->site?->property_url]);
     }
 
     public function statusBadge(): string
