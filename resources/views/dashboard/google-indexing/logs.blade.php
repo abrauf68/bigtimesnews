@@ -45,7 +45,7 @@
         </div>
         <div class="card-body">
             @include('dashboard.google-indexing.partials.log-table', ['logs' => $logs, 'showSite' => true])
-            {{ $logs->links() }}
+            {{ $logs->onEachSide(1)->links('pagination::bootstrap-5') }}
         </div>
     </div>
 @endsection

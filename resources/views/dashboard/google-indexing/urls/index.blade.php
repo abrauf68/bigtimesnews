@@ -132,10 +132,10 @@
                     @can('delete setting')
                         <button type="submit" name="action" value="delete" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ __('Remove the selected URLs?') }}')">{{ __('Delete') }}</button>
                     @endcan
-                    <div class="ms-auto">{{ $urls->links() }}</div>
                 </div>
             @endcan
         </form>
+        <div class="card-body pt-0 d-flex justify-content-end">{{ $urls->onEachSide(1)->links('pagination::bootstrap-5') }}</div>
 
         {{-- Per-row forms live outside the bulk form (HTML forms cannot be nested). --}}
         @foreach ($urls as $u)
