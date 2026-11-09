@@ -251,6 +251,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::get('/sites/{site}/urls/export', [$ns . 'UrlController', 'export'])->name('urls.export');
                 Route::post('/sites/{site}/urls/bulk', [$ns . 'UrlController', 'bulk'])->name('urls.bulk');
                 Route::post('/sites/{site}/urls/{url}/inspect', [$ns . 'UrlController', 'inspect'])->name('urls.inspect');
+                Route::post('/sites/{site}/urls/{url}/requested', [$ns . 'UrlController', 'markRequested'])->name('urls.requested');
                 Route::delete('/sites/{site}/urls/{url}', [$ns . 'UrlController', 'destroy'])->name('urls.destroy');
             });
 

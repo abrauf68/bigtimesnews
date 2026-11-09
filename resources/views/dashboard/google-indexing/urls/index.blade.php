@@ -54,7 +54,7 @@
                 <div class="col-md-2">
                     <select name="status" class="form-select">
                         <option value="">{{ __('All statuses') }}</option>
-                        @foreach (\App\Models\IndexingUrl::STATUSES as $st)
+                        @foreach (array_merge(\App\Models\IndexingUrl::STATUSES, ['requested']) as $st)
                             <option value="{{ $st }}" @selected(request('status') === $st)>{{ ucfirst(str_replace('_', ' ', $st)) }}</option>
                         @endforeach
                     </select>
@@ -87,6 +87,7 @@
                         <tr>
                             <th style="width:30px"><input type="checkbox" class="form-check-input" id="checkAll"></th>
                             <th>{{ __('URL') }}</th>
+                            <th>{{ __('Published') }}</th>
                             <th>{{ __('Status') }}</th>
                             <th>{{ __('Coverage') }}</th>
                             <th>{{ __('Last crawl') }}</th>
@@ -101,14 +102,15 @@
                                 <td><input type="checkbox" class="form-check-input row-check" name="ids[]" value="{{ $u->id }}"></td>
                                 <td style="max-width:380px"><a href="{{ $u->url }}" target="_blank" rel="noopener" class="text-break">{{ $u->url }}</a>
                                     @if ($u->last_error)<div class="small text-danger text-break">{{ \Illuminate\Support\Str::limit($u->last_error, 140) }}</div>@endif</td>
-                                <td><span class="badge bg-label-{{ $u->statusBadge() }}">{{ __($u->statusLabel()) }}</span></td>
+                                <td class="small text-nowrap">{{ ($u->published_at ?? null) ? $u->published_at->format('M j, Y H:i') : '-' }}</td>
+                                <td><span class="badge bg-label-{{ $u->statusBadge() }}" id="st-{{ $u->id }}">{{ __($u->statusLabel()) }}</span></td>
                                 <td class="small">{{ $u->coverage_state ?: '-' }}</td>
                                 <td class="small text-nowrap">{{ $u->last_crawl_at ? $u->last_crawl_at->format('M j, Y') : '-' }}</td>
                                 <td class="small text-nowrap">{{ $u->inspected_at ? $u->inspected_at->diffForHumans() : '-' }}</td>
                                 <td><span class="badge bg-label-secondary">{{ $u->source }}</span></td>
                                 <td class="text-end text-nowrap">
                                     @if ($u->status !== 'indexed')
-                                        <a href="{{ $u->searchConsoleLink() }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success gi-request" data-url="{{ $u->url }}" title="{{ __('Copies the URL and opens Search Console. Paste it in the top search bar, then click Request indexing.') }}">{{ __('Request') }} <i class="ti ti-external-link ti-xs"></i></a>
+                                        <a href="{{ $u->searchConsoleLink() }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success gi-request" data-url="{{ $u->url }}" data-id="{{ $u->id }}" data-mark="{{ route('dashboard.google_indexing.urls.requested', [$site, $u]) }}" title="{{ __('Copies the URL and opens Search Console. Paste it in the top search bar, then click Request indexing.') }}">{{ __('Request') }} <i class="ti ti-external-link ti-xs"></i></a>
                                     @endif
                                     @can('update setting')
                                         <button type="submit" form="inspect-{{ $u->id }}" class="btn btn-sm btn-outline-primary">{{ __('Inspect') }}</button>
@@ -129,6 +131,7 @@
                 <div class="card-body d-flex flex-wrap gap-2 align-items-center">
                     <span class="text-muted small">{{ __('With selected:') }}</span>
                     <button type="submit" name="action" value="inspect" class="btn btn-sm btn-primary">{{ __('Inspect') }}</button>
+                    <button type="submit" name="action" value="requested" class="btn btn-sm btn-outline-info">{{ __('Mark requested') }}</button>
                     @can('delete setting')
                         <button type="submit" name="action" value="delete" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ __('Remove the selected URLs?') }}')">{{ __('Delete') }}</button>
                     @endcan
@@ -151,6 +154,19 @@
         document.querySelectorAll('.gi-request').forEach(function (a) {
             a.addEventListener('click', function () {
                 try { navigator.clipboard.writeText(a.dataset.url); } catch (e) {}
+
+                // Mark the URL as "Requested" right away.
+                fetch(a.dataset.mark, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+                }).then(function (r) {
+                    if (!r.ok) { return; }
+                    var badge = document.getElementById('st-' + a.dataset.id);
+                    if (badge && badge.textContent.trim() !== 'Indexed') {
+                        badge.textContent = 'Requested';
+                        badge.className = 'badge bg-label-info';
+                    }
+                }).catch(function () {});
             });
         });
         document.getElementById('checkAll')?.addEventListener('change', function () {

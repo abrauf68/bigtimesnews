@@ -18,7 +18,7 @@ class UrlController extends Controller
     {
         $this->authorize('view setting');
 
-        $urls = $this->filtered($request, $site)->orderByDesc('id')->paginate(50)->withQueryString();
+        $urls = $this->filtered($request, $site)->orderByRaw('COALESCE(published_at, created_at) DESC')->orderByDesc('id')->paginate(50)->withQueryString();
         $counts = IndexingUrl::where('site_id', $site->id)->selectRaw('status, COUNT(*) as c')->groupBy('status')->pluck('c', 'status');
 
         return view('dashboard.google-indexing.urls.index', compact('site', 'urls', 'counts'));
@@ -67,7 +67,7 @@ class UrlController extends Controller
         $this->authorize('update setting');
 
         $data = $request->validate([
-            'action' => 'required|in:inspect,delete',
+            'action' => 'required|in:inspect,delete,requested',
             'ids' => 'required|array|min:1|max:2000',
             'ids.*' => 'integer',
         ]);
@@ -79,6 +79,12 @@ class UrlController extends Controller
             IndexingUrl::whereIn('id', $ids)->delete();
 
             return back()->with('success', __(':n URL(s) removed.', ['n' => count($ids)]));
+        }
+
+        if ($data['action'] === 'requested') {
+            IndexingUrl::whereIn('id', $ids)->whereNull('requested_at')->update(['requested_at' => now()]);
+
+            return back()->with('success', __(':n URL(s) marked as requested.', ['n' => count($ids)]));
         }
 
         $remaining = max(0, $site->effectiveDailyLimit() - IndexingApiUsage::inspectionsToday($site->id));
@@ -104,6 +110,20 @@ class UrlController extends Controller
         return back()->with('success', __('Inspection queued.'));
     }
 
+    /** Called when the admin clicks "Request" (they then request indexing manually in Search Console). */
+    public function markRequested(Request $request, IndexingSite $site, IndexingUrl $url)
+    {
+        $this->authorize('update setting');
+        abort_unless($url->site_id === $site->id, 404);
+
+        if (!$url->requested_at) {
+            $url->update(['requested_at' => now()]);
+            IndexingLog::record($site->id, 'inspect', 'info', 'Marked as "Requested" (indexing requested manually in Search Console).', ['url' => $url->url], $url->id);
+        }
+
+        return $request->expectsJson() ? response()->json(['ok' => true, 'label' => 'Requested']) : back()->with('success', __('Marked as requested.'));
+    }
+
     public function destroy(IndexingSite $site, IndexingUrl $url)
     {
         $this->authorize('delete setting');
@@ -117,18 +137,18 @@ class UrlController extends Controller
     {
         $this->authorize('view setting');
 
-        $query = $this->filtered($request, $site)->orderBy('id');
+        $query = $this->filtered($request, $site)->orderByRaw('COALESCE(published_at, created_at) DESC')->orderByDesc('id');
         $filename = 'indexing-' . \Illuminate\Support\Str::slug($site->name) . '-' . now()->format('Y-m-d') . '.csv';
 
         return response()->streamDownload(function () use ($query) {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF"); // UTF-8 BOM so Excel opens it correctly
-            fputcsv($out, ['URL', 'Status', 'Coverage state', 'Verdict', 'Last crawl', 'Last inspected', 'Next inspection', 'Inspections', 'Source', 'Added', 'Error']);
+            fputcsv($out, ['URL', 'Published', 'Status', 'Coverage state', 'Verdict', 'Last crawl', 'Last inspected', 'Next inspection', 'Inspections', 'Source', 'Added', 'Error']);
 
             $query->chunkById(1000, function ($rows) use ($out) {
                 foreach ($rows as $u) {
                     fputcsv($out, [
-                        $this->csvSafe($u->url), $u->statusLabel(), $this->csvSafe((string) $u->coverage_state), $u->verdict,
+                        $this->csvSafe($u->url), optional($u->published_at)->format('Y-m-d H:i'), $u->statusLabel(), $this->csvSafe((string) $u->coverage_state), $u->verdict,
                         optional($u->last_crawl_at)->format('Y-m-d H:i'), optional($u->inspected_at)->format('Y-m-d H:i'),
                         optional($u->next_inspect_at)->format('Y-m-d H:i'), $u->inspect_count, $u->source,
                         $u->created_at->format('Y-m-d H:i'), $this->csvSafe((string) $u->last_error),
@@ -146,7 +166,9 @@ class UrlController extends Controller
         if ($request->filled('q')) {
             $q->where('url', 'like', '%' . str_replace(['%', '_'], ['\\%', '\\_'], $request->input('q')) . '%');
         }
-        if ($request->filled('status') && in_array($request->input('status'), IndexingUrl::STATUSES, true)) {
+        if ($request->input('status') === 'requested') {
+            $q->whereNotNull('requested_at')->where('status', '!=', IndexingUrl::STATUS_INDEXED);
+        } elseif ($request->filled('status') && in_array($request->input('status'), IndexingUrl::STATUSES, true)) {
             $q->where('status', $request->input('status'));
         }
         if ($request->filled('source') && in_array($request->input('source'), IndexingUrl::SOURCES, true)) {

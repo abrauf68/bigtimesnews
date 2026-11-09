@@ -54,7 +54,7 @@ class PostController extends Controller
         $known = [];
         foreach ($items->chunk(500) as $chunk) {
             $hashes = $chunk->map(fn ($i) => \App\Models\IndexingUrl::hashUrl(\App\Services\GoogleIndexing\UrlRegistrar::normalize($i['url']) ?? $i['url']))->all();
-            foreach (\App\Models\IndexingUrl::whereIn('url_hash', $hashes)->get(['url_hash', 'status', 'coverage_state', 'last_error', 'inspect_count']) as $row) {
+            foreach (\App\Models\IndexingUrl::whereIn('url_hash', $hashes)->get(['url_hash', 'status', 'coverage_state', 'last_error', 'inspect_count', 'requested_at']) as $row) {
                 $known[$row->url_hash] = $row;
             }
         }
@@ -64,13 +64,17 @@ class PostController extends Controller
             $r = $known[$hash] ?? null;
             $status = '';
             $details = '';
-            if ($r && $r->inspect_count > 0 || ($r && $r->status === 'error')) {
+            if ($r && ($r->inspect_count > 0 || $r->status === 'error' || $r->requested_at)) {
                 $status = match ($r->status) {
                     'indexed' => 'Indexed',
                     'not_indexed' => 'Not Indexed',
                     'error' => 'Error Indexing',
                     default => '',
                 };
+                // A manual "Request" click wins over "Not Indexed" until Google actually indexes the URL.
+                if ($r->requested_at && $r->status !== 'indexed') {
+                    $status = 'Requested Index';
+                }
                 $details = $r->status === 'error' ? \Illuminate\Support\Str::limit((string) $r->last_error, 120) : (string) $r->coverage_state;
             }
 

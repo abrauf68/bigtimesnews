@@ -18,7 +18,7 @@ class IndexingUrl extends Model
     protected $fillable = [
         'site_id', 'url', 'url_hash', 'source', 'post_id', 'status', 'verdict', 'coverage_state',
         'indexing_state', 'robots_state', 'page_fetch_state', 'google_canonical', 'last_crawl_at',
-        'sitemap_lastmod', 'inspect_count', 'inspected_at', 'next_inspect_at', 'first_indexed_at', 'last_error',
+        'sitemap_lastmod', 'inspect_count', 'inspected_at', 'next_inspect_at', 'first_indexed_at', 'requested_at', 'published_at', 'last_error',
     ];
 
     protected $casts = [
@@ -27,6 +27,8 @@ class IndexingUrl extends Model
         'inspected_at' => 'datetime',
         'next_inspect_at' => 'datetime',
         'first_indexed_at' => 'datetime',
+        'requested_at' => 'datetime',
+        'published_at' => 'datetime',
     ];
 
     public function site(): BelongsTo
@@ -45,22 +47,30 @@ class IndexingUrl extends Model
         return 'https://search.google.com/search-console?' . http_build_query(['resource_id' => $this->site?->property_url]);
     }
 
+    /** What the admin sees: an un-indexed URL that was manually requested shows as "requested". */
+    public function displayStatus(): string
+    {
+        return $this->requested_at && $this->status !== self::STATUS_INDEXED ? 'requested' : $this->status;
+    }
+
     public function statusBadge(): string
     {
-        return match ($this->status) {
+        return match ($this->displayStatus()) {
             self::STATUS_INDEXED => 'success',
             self::STATUS_NOT_INDEXED => 'danger',
             self::STATUS_ERROR => 'warning',
+            'requested' => 'info',
             default => 'secondary',
         };
     }
 
     public function statusLabel(): string
     {
-        return match ($this->status) {
+        return match ($this->displayStatus()) {
             self::STATUS_INDEXED => 'Indexed',
             self::STATUS_NOT_INDEXED => 'Not Indexed',
             self::STATUS_ERROR => 'Error',
+            'requested' => 'Requested',
             default => 'Pending',
         };
     }

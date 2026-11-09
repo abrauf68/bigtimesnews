@@ -72,6 +72,7 @@ class UrlRegistrar
 
             $now = now();
             $rows = [];
+            $dates = app(PostDateResolver::class)->resolve(array_values(array_diff_key($chunk, $existing)));
             foreach ($chunk as $hash => $url) {
                 if (isset($existing[$hash])) {
                     continue;
@@ -82,7 +83,8 @@ class UrlRegistrar
                     'url' => $url,
                     'url_hash' => $hash,
                     'source' => $source,
-                    'post_id' => $postId,
+                    'post_id' => $postId ?? ($dates[$url]['post_id'] ?? null),
+                    'published_at' => $dates[$url]['published_at'] ?? null,
                     'status' => IndexingUrl::STATUS_PENDING,
                     'sitemap_lastmod' => $lastmod ? $this->parseDate($lastmod) : null,
                     'created_at' => $now,
