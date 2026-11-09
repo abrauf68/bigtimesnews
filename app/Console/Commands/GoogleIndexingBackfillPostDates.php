@@ -12,7 +12,17 @@ class GoogleIndexingBackfillPostDates extends Command
 
     public function handle(PostDateResolver $resolver): int
     {
-        $this->info('Updated ' . $resolver->backfill() . ' URL(s).');
+        $s = $resolver->backfill();
+
+        $this->info("Matched with posts: {$s['matched']}");
+        $this->info("Filled from sitemap/created date (no post found): {$s['fallback']}");
+
+        if ($s['unmatched']) {
+            $this->warn('URLs with no matching post (sample):');
+            foreach ($s['unmatched'] as $u) {
+                $this->line('  ' . $u);
+            }
+        }
 
         return self::SUCCESS;
     }

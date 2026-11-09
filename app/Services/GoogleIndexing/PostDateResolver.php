@@ -5,7 +5,7 @@ namespace App\Services\GoogleIndexing;
 use App\Models\IndexingUrl;
 use App\Models\Post;
 
-/** Matches an indexing URL (/news/{category}/{slug}) to its blog post to get the post's publish date. */
+/** Matches an indexing URL to its blog post (by the last path segment = post slug) to get the publish date. */
 class PostDateResolver
 {
     public static function slugFromUrl(string $url): ?string
@@ -15,8 +15,9 @@ class PostDateResolver
             return null;
         }
         $parts = explode('/', $path);
+        $slug = mb_strtolower(trim(urldecode((string) end($parts))));
 
-        return count($parts) >= 3 && $parts[0] === 'news' ? end($parts) : null;
+        return $slug !== '' ? $slug : null;
     }
 
     /**
@@ -35,7 +36,9 @@ class PostDateResolver
             return [];
         }
 
-        $posts = Post::whereIn('slug', array_unique(array_values($slugByUrl)))->get(['id', 'slug', 'published_at', 'created_at'])->keyBy('slug');
+        $posts = Post::whereIn('slug', array_unique(array_values($slugByUrl)))
+            ->get(['id', 'slug', 'published_at', 'created_at'])
+            ->keyBy(fn ($p) => mb_strtolower($p->slug));
 
         $out = [];
         foreach ($slugByUrl as $url => $slug) {
@@ -47,21 +50,43 @@ class PostDateResolver
         return $out;
     }
 
-    /** Fill post_id / published_at on existing rows. Returns the number of rows updated. */
-    public function backfill(): int
+    /**
+     * Fill post_id / published_at on rows that have no date yet.
+     * Falls back to the sitemap <lastmod>, then first-seen time, so the column is never empty.
+     *
+     * @return array{matched:int, fallback:int, unmatched:array<int,string>}
+     */
+    public function backfill(): array
     {
-        $updated = 0;
+        $stats = ['matched' => 0, 'fallback' => 0, 'unmatched' => []];
 
-        IndexingUrl::whereNull('published_at')->chunkById(300, function ($rows) use (&$updated) {
+        $ids = IndexingUrl::whereNull('published_at')->pluck('id');
+
+        foreach ($ids->chunk(300) as $chunk) {
+            $rows = IndexingUrl::whereIn('id', $chunk)->get();
             $map = $this->resolve($rows->pluck('url')->all());
+
             foreach ($rows as $row) {
                 if (isset($map[$row->url])) {
-                    $row->update(['post_id' => $row->post_id ?? $map[$row->url]['post_id'], 'published_at' => $map[$row->url]['published_at']]);
-                    $updated++;
+                    $row->forceFill([
+                        'post_id' => $row->post_id ?? $map[$row->url]['post_id'],
+                        'published_at' => $map[$row->url]['published_at'],
+                    ])->save();
+                    $stats['matched']++;
+                    continue;
+                }
+
+                $fallback = $row->sitemap_lastmod ?? $row->created_at;
+                if ($fallback) {
+                    $row->forceFill(['published_at' => $fallback])->save();
+                    $stats['fallback']++;
+                }
+                if (count($stats['unmatched']) < 10) {
+                    $stats['unmatched'][] = $row->url;
                 }
             }
-        });
+        }
 
-        return $updated;
+        return $stats;
     }
 }

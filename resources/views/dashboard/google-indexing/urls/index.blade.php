@@ -82,7 +82,7 @@
         <form method="POST" action="{{ route('dashboard.google_indexing.urls.bulk', $site) }}" id="bulkForm">
             @csrf
             <div class="table-responsive">
-                <table class="table align-middle">
+                <table class="table align-middle" style="min-width:1100px">
                     <thead>
                         <tr>
                             <th style="width:30px"><input type="checkbox" class="form-check-input" id="checkAll"></th>
@@ -100,11 +100,13 @@
                         @forelse ($urls as $u)
                             <tr>
                                 <td><input type="checkbox" class="form-check-input row-check" name="ids[]" value="{{ $u->id }}"></td>
-                                <td style="max-width:380px"><a href="{{ $u->url }}" target="_blank" rel="noopener" class="text-break">{{ $u->url }}</a>
-                                    @if ($u->last_error)<div class="small text-danger text-break">{{ \Illuminate\Support\Str::limit($u->last_error, 140) }}</div>@endif</td>
+                                <td style="min-width:260px;max-width:420px">
+                                    @php($path = parse_url($u->url, PHP_URL_PATH) ?: $u->url)
+                                    <a href="{{ $u->url }}" target="_blank" rel="noopener" title="{{ $u->url }}" style="word-break:break-all">{{ \Illuminate\Support\Str::limit($path, 90) }}</a>
+                                    @if ($u->last_error)<div class="small text-danger" style="word-break:break-word">{{ \Illuminate\Support\Str::limit($u->last_error, 140) }}</div>@endif</td>
                                 <td class="small text-nowrap">{{ ($u->published_at ?? null) ? $u->published_at->format('M j, Y H:i') : '-' }}</td>
-                                <td><span class="badge bg-label-{{ $u->statusBadge() }}" id="st-{{ $u->id }}">{{ __($u->statusLabel()) }}</span></td>
-                                <td class="small">{{ $u->coverage_state ?: '-' }}</td>
+                                <td class="text-nowrap"><span class="badge bg-label-{{ $u->statusBadge() }}" id="st-{{ $u->id }}">{{ __($u->statusLabel()) }}</span></td>
+                                <td class="small" style="min-width:140px">{{ $u->coverage_state ?: '-' }}</td>
                                 <td class="small text-nowrap">{{ $u->last_crawl_at ? $u->last_crawl_at->format('M j, Y') : '-' }}</td>
                                 <td class="small text-nowrap">{{ $u->inspected_at ? $u->inspected_at->diffForHumans() : '-' }}</td>
                                 <td><span class="badge bg-label-secondary">{{ $u->source }}</span></td>
@@ -121,7 +123,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="8" class="text-center text-muted py-5">{{ __('No URLs match.') }}</td></tr>
+                            <tr><td colspan="9" class="text-center text-muted py-5">{{ __('No URLs match.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>
