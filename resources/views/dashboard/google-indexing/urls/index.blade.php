@@ -82,12 +82,13 @@
         <form method="POST" action="{{ route('dashboard.google_indexing.urls.bulk', $site) }}" id="bulkForm">
             @csrf
             <div class="table-responsive">
-                <table class="table align-middle" style="min-width:1100px">
+                <table class="table align-middle" style="min-width:1250px">
                     <thead>
                         <tr>
                             <th style="width:30px"><input type="checkbox" class="form-check-input" id="checkAll"></th>
                             <th>{{ __('URL') }}</th>
                             <th>{{ __('Published') }}</th>
+                            <th class="text-nowrap">{{ __('Engagement') }}</th>
                             <th>{{ __('Status') }}</th>
                             <th>{{ __('Coverage') }}</th>
                             <th>{{ __('Last crawl') }}</th>
@@ -105,6 +106,14 @@
                                     <a href="{{ $u->url }}" target="_blank" rel="noopener" title="{{ $u->url }}" style="word-break:break-all">{{ \Illuminate\Support\Str::limit($path, 90) }}</a>
                                     @if ($u->last_error)<div class="small text-danger" style="word-break:break-word">{{ \Illuminate\Support\Str::limit($u->last_error, 140) }}</div>@endif</td>
                                 <td class="small text-nowrap">{{ ($u->published_at ?? null) ? $u->published_at->format('M j, Y H:i') : '-' }}</td>
+                                <td class="small text-nowrap">
+                                    @php($e = $engagement[$u->post_id] ?? null)
+                                    @if ($e)
+                                        <span title="{{ __('Views') }}"><i class="ti ti-eye ti-xs"></i> {{ number_format($e['views']) }}</span>
+                                        <span class="ms-2" title="{{ __('Likes') }}"><i class="ti ti-heart ti-xs"></i> {{ number_format($e['likes']) }}</span>
+                                        <span class="ms-2" title="{{ __('Comments') }}"><i class="ti ti-message ti-xs"></i> {{ number_format($e['comments']) }}</span>
+                                    @else - @endif
+                                </td>
                                 <td class="text-nowrap"><span class="badge bg-label-{{ $u->statusBadge() }}" id="st-{{ $u->id }}">{{ __($u->statusLabel()) }}</span></td>
                                 <td class="small" style="min-width:140px">{{ $u->coverage_state ?: '-' }}</td>
                                 <td class="small text-nowrap">{{ $u->last_crawl_at ? $u->last_crawl_at->format('M j, Y') : '-' }}</td>
@@ -123,7 +132,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="9" class="text-center text-muted py-5">{{ __('No URLs match.') }}</td></tr>
+                            <tr><td colspan="10" class="text-center text-muted py-5">{{ __('No URLs match.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>

@@ -21,7 +21,22 @@ class UrlController extends Controller
         $urls = $this->filtered($request, $site)->orderByRaw('COALESCE(published_at, created_at) DESC')->orderByDesc('id')->paginate(50)->withQueryString();
         $counts = IndexingUrl::where('site_id', $site->id)->selectRaw('status, COUNT(*) as c')->groupBy('status')->pluck('c', 'status');
 
-        return view('dashboard.google-indexing.urls.index', compact('site', 'urls', 'counts'));
+        // Engagement for the posts on this page: 3 small queries, no N+1.
+        $postIds = $urls->pluck('post_id')->filter()->unique()->values()->all();
+        $engagement = [];
+        if ($postIds) {
+            foreach (\App\Models\Post::withTrashed()->whereIn('id', $postIds)->pluck('views', 'id') as $id => $v) {
+                $engagement[$id] = ['views' => (int) $v, 'likes' => 0, 'comments' => 0];
+            }
+            foreach (\App\Models\PostLike::whereIn('post_id', $postIds)->selectRaw('post_id, COUNT(*) c')->groupBy('post_id')->pluck('c', 'post_id') as $id => $c) {
+                $engagement[$id]['likes'] = (int) $c;
+            }
+            foreach (\App\Models\Comment::whereIn('post_id', $postIds)->selectRaw('post_id, COUNT(*) c')->groupBy('post_id')->pluck('c', 'post_id') as $id => $c) {
+                $engagement[$id]['comments'] = (int) $c;
+            }
+        }
+
+        return view('dashboard.google-indexing.urls.index', compact('site', 'urls', 'counts', 'engagement'));
     }
 
     /** Bulk add (pasted list) and CSV upload share this action. */
