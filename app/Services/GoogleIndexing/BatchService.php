@@ -32,6 +32,18 @@ class BatchService
                 ->where('status', IndexingUrl::STATUS_PENDING)
                 ->orderBy('id')->limit($take)->pluck('id')->all();
 
+            // URLs the admin already requested in Search Console are re-checked first, so "Requested" turns to "Indexed" quickly.
+            if (count($ids) < $take) {
+                $ids = array_merge($ids, IndexingUrl::where('site_id', $site->id)
+                    ->whereNotNull('requested_at')
+                    ->where('status', '!=', IndexingUrl::STATUS_INDEXED)
+                    ->where('status', '!=', IndexingUrl::STATUS_PENDING)
+                    ->where(function ($q) {
+                        $q->whereNull('next_inspect_at')->orWhere('next_inspect_at', '<=', now());
+                    })
+                    ->orderBy('next_inspect_at')->limit($take - count($ids))->pluck('id')->all());
+            }
+
             if (count($ids) < $take) {
                 $ids = array_merge($ids, $this->due($site, [IndexingUrl::STATUS_NOT_INDEXED, IndexingUrl::STATUS_ERROR], $take - count($ids)));
             }

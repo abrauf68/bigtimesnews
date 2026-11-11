@@ -73,7 +73,10 @@ class InspectionService
             $update['next_inspect_at'] = now()->addDays(max(1, (int) $site->recheck_indexed_days));
             $update['first_indexed_at'] = $url->first_indexed_at ?? now();
         } elseif ($status === IndexingUrl::STATUS_NOT_INDEXED) {
-            $update['next_inspect_at'] = now()->addDays(max(1, (int) $site->reinspect_days));
+            // Requested URLs are checked often (Google may index them within hours); the rest follow the normal interval.
+            $update['next_inspect_at'] = $url->requested_at
+                ? now()->addHours(6)
+                : now()->addDays(max(1, (int) $site->reinspect_days));
         } else {
             $update['next_inspect_at'] = now()->addDay();
         }

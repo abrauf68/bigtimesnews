@@ -97,7 +97,7 @@ class UrlController extends Controller
         }
 
         if ($data['action'] === 'requested') {
-            IndexingUrl::whereIn('id', $ids)->whereNull('requested_at')->update(['requested_at' => now()]);
+            IndexingUrl::whereIn('id', $ids)->whereNull('requested_at')->update(['requested_at' => now(), 'next_inspect_at' => now()->addHours(3)]);
 
             return back()->with('success', __(':n URL(s) marked as requested.', ['n' => count($ids)]));
         }
@@ -109,6 +109,36 @@ class UrlController extends Controller
         }
 
         return back()->with('success', __(':n URL(s) queued for inspection (:left API calls were left today).', ['n' => count($queue), 'left' => $remaining]));
+    }
+
+    /** "Check status now": re-inspect requested / not-indexed URLs immediately (newest posts first), within today's API quota. */
+    public function refresh(Request $request, IndexingSite $site)
+    {
+        $this->authorize('update setting');
+
+        if (!$site->isConnected()) {
+            return back()->with('error', __('Connect Google Search Console first.'));
+        }
+
+        $scope = $request->input('scope') === 'all' ? 'all' : 'requested';
+
+        $query = IndexingUrl::where('site_id', $site->id)->whereIn('status', [IndexingUrl::STATUS_NOT_INDEXED, IndexingUrl::STATUS_ERROR]);
+        if ($scope === 'requested') {
+            $query->whereNotNull('requested_at');
+        }
+
+        $remaining = max(0, $site->effectiveDailyLimit() - IndexingApiUsage::inspectionsToday($site->id));
+        $ids = $query->orderByRaw('COALESCE(published_at, created_at) DESC')->limit($remaining)->pluck('id');
+
+        foreach ($ids as $i => $id) {
+            InspectUrlJob::dispatch($id)->delay(now()->addSeconds(min((int) floor($i / 2), 300)));
+        }
+
+        if ($ids->isEmpty()) {
+            return back()->with('error', $remaining === 0 ? __('Today\'s API limit is used up. Try again tomorrow.') : __('Nothing to check.'));
+        }
+
+        return back()->with('success', __(':n URL(s) queued for a status check now. Refresh this page in a few minutes (:left API calls were left today).', ['n' => $ids->count(), 'left' => $remaining]));
     }
 
     public function inspect(IndexingSite $site, IndexingUrl $url)
@@ -132,7 +162,7 @@ class UrlController extends Controller
         abort_unless($url->site_id === $site->id, 404);
 
         if (!$url->requested_at) {
-            $url->update(['requested_at' => now()]);
+            $url->update(['requested_at' => now(), 'next_inspect_at' => now()->addHours(3)]);
             IndexingLog::record($site->id, 'inspect', 'info', 'Marked as "Requested" (indexing requested manually in Search Console).', ['url' => $url->url], $url->id);
         }
 

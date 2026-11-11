@@ -75,6 +75,10 @@
                 <div class="col-12 d-flex gap-2">
                     <a href="{{ route('dashboard.google_indexing.urls.index', $site) }}" class="btn btn-sm btn-outline-secondary">{{ __('Reset') }}</a>
                     <a href="{{ route('dashboard.google_indexing.urls.export', array_merge(['site' => $site->id], request()->only('q', 'status', 'source', 'from', 'to'))) }}" class="btn btn-sm btn-outline-success"><i class="ti ti-download ti-xs me-1"></i>{{ __('Export CSV (current filter)') }}</a>
+                    @can('update setting')
+                        <button type="submit" form="refreshRequested" class="btn btn-sm btn-info"><i class="ti ti-refresh ti-xs me-1"></i>{{ __('Check requested now') }}</button>
+                        <button type="submit" form="refreshAll" class="btn btn-sm btn-outline-info" onclick="return confirm('{{ __('Re-check every Not Indexed URL now? This uses API quota (newest posts first).') }}')">{{ __('Check all Not Indexed now') }}</button>
+                    @endcan
                 </div>
             </form>
         </div>
@@ -150,6 +154,9 @@
             @endcan
         </form>
         <div class="card-body pt-0 d-flex justify-content-end">{{ $urls->onEachSide(1)->links('pagination::bootstrap-5') }}</div>
+
+        <form id="refreshRequested" method="POST" action="{{ route('dashboard.google_indexing.urls.refresh', $site) }}">@csrf<input type="hidden" name="scope" value="requested"></form>
+        <form id="refreshAll" method="POST" action="{{ route('dashboard.google_indexing.urls.refresh', $site) }}">@csrf<input type="hidden" name="scope" value="all"></form>
 
         {{-- Per-row forms live outside the bulk form (HTML forms cannot be nested). --}}
         @foreach ($urls as $u)
