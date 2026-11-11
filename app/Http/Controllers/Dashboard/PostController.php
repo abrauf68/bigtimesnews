@@ -91,7 +91,7 @@ class PostController extends Controller
     public function getPostsData()
     {
         try {
-            $posts = Post::with('category')->latest()->select('posts.*');
+            $posts = Post::with('category')->withCount(['likes', 'comments'])->latest()->select('posts.*');
 
             return DataTables::of($posts)
                 ->addIndexColumn()
@@ -107,6 +107,11 @@ class PostController extends Controller
                 ->editColumn('status', function ($post) {
                     $badgeClass = $post->status == 'published' ? 'success' : 'secondary';
                     return '<span class="badge me-4 bg-label-' . $badgeClass . '">' . ucfirst($post->status) . '</span>';
+                })
+                ->addColumn('engagement', function ($post) {
+                    return '<span class="text-nowrap" title="Views"><i class="ti ti-eye ti-xs"></i> ' . number_format((int) $post->views) . '</span>'
+                        . '<span class="text-nowrap ms-2" title="Likes"><i class="ti ti-heart ti-xs"></i> ' . number_format($post->likes_count) . '</span>'
+                        . '<span class="text-nowrap ms-2" title="Comments"><i class="ti ti-message ti-xs"></i> ' . number_format($post->comments_count) . '</span>';
                 })
                 ->addColumn('action', function ($post) {
                     $actions = '';
@@ -138,7 +143,7 @@ class PostController extends Controller
 
                     return $actions;
                 })
-                ->rawColumns(['status', 'action'])
+                ->rawColumns(['status', 'engagement', 'action'])
                 ->make(true);
         } catch (\Throwable $th) {
             Log::error('Posts DataTable Failed', ['error' => $th->getMessage()]);

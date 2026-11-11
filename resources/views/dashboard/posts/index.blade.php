@@ -50,6 +50,7 @@
                             <th>{{ __('Category') }}</th>
                             <th>{{ __('Created At') }}</th>
                             <th>{{ __('Status') }}</th>
+                            <th class="text-nowrap">{{ __('Engagement') }}</th>
                             @canany(['delete post', 'update post', 'view post'])
                                 <th>{{ __('Action') }}</th>
                             @endcan
@@ -81,6 +82,7 @@
                     { data: 'category', name: 'category.name' },
                     { data: 'created_at', name: 'created_at' },
                     { data: 'status', name: 'status', orderable: true, searchable: true },
+                    { data: 'engagement', name: 'engagement', orderable: false, searchable: false },
                     { data: 'action', name: 'action', orderable: false, searchable: false }
                 ],
                 order: [[4, 'desc']], // Sort by created_at desc
