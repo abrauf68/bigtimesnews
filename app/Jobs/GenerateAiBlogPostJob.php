@@ -24,7 +24,7 @@ class GenerateAiBlogPostJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 2;
-    public $timeout = 300; // Claude + Unsplash calls can take a while
+    public $timeout = 600; // writer + QA Claude calls (up to ~150s each) + Unsplash can take a while
 
     public function __construct(protected int $topicId)
     {
@@ -33,7 +33,9 @@ class GenerateAiBlogPostJob implements ShouldQueue
     public function handle(): void
     {
         $topic = AiBlogTopic::find($this->topicId);
-        if (!$topic || $topic->status !== 'pending') {
+        // A retry (after the worker was killed mid-run) finds the topic still marked 'generating'.
+        $retrying = $topic && $topic->status === 'generating' && $this->attempts() > 1;
+        if (!$topic || ($topic->status !== 'pending' && !$retrying)) {
             return;
         }
 
@@ -155,6 +157,15 @@ class GenerateAiBlogPostJob implements ShouldQueue
                 'status' => 'failed',
                 'error_message' => Str::limit($e->getMessage(), 2000),
             ]);
+        }
+    }
+
+    /** Called when the worker is killed / the job times out: never leave the topic stuck on "Generating". */
+    public function failed(\Throwable $e): void
+    {
+        $topic = AiBlogTopic::find($this->topicId);
+        if ($topic && in_array($topic->status, ['pending', 'generating'], true)) {
+            $topic->update(['status' => 'failed', 'error_message' => Str::limit('Job failed: ' . $e->getMessage(), 2000)]);
         }
     }
 

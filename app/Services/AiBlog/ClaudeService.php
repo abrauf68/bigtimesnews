@@ -242,7 +242,8 @@ PROMPT;
                 'anthropic-version' => self::API_VERSION,
                 'content-type' => 'application/json',
             ])
-            ->timeout(180)
+            ->connectTimeout(20)
+            ->timeout(150)
             ->post(self::API_URL, [
                 'model' => $model,
                 'max_tokens' => $maxTokens,

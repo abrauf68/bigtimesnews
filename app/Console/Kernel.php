@@ -27,8 +27,13 @@ class Kernel extends ConsoleKernel
 
         // 2) Processes queued jobs (QUEUE_CONNECTION=database). Each invocation grabs
         //    whatever is pending and exits, which fits shared hosting's process-per-cron model.
-        $schedule->command('queue:work --queue=default --stop-when-empty --max-time=250 --tries=2')
+        $schedule->command('queue:work --queue=default --stop-when-empty --max-time=250 --timeout=600 --tries=2')
             ->everyFiveMinutes()
+            ->withoutOverlapping();
+
+        // 2b) Rescues topics stuck on "Generating" (worker killed by the host mid-run).
+        $schedule->command('ai-blog:recover-stuck')
+            ->everyTenMinutes()
             ->withoutOverlapping();
 
         // 3) Once the whole batch has finished (success or failure), emails the admin.
